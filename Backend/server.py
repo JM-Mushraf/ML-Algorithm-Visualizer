@@ -1,56 +1,41 @@
-from flask import Flask, request, jsonify
-import numpy as np
-import pandas as pd
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import LabelEncoder
-from flask_cors import CORS
-import seaborn as sns
-from controllers.dataset_controller import get_builtin_dataset
+from flask import Flask, request, jsonify, send_from_directory
+from regressions import run_regression
+import os
 
 app = Flask(__name__)
-CORS(app)  # Allow requests from frontend
-@app.route('/get-dataset', methods=['POST'])
-def fetch_dataset():
-    """API to fetch datasets from Seaborn & Scikit-Learn."""
+
+# Define static folder for serving images
+PLOT_DIR = "static/plots"
+
+@app.route("/")
+def home():
+    return jsonify({"message": "Welcome to the Regression API"}), 200
+
+@app.route("/regression", methods=["POST"])
+def regression():
     try:
-        data = request.json
-        dataset_name = data.get("datasetName")
+        data = request.get_json()
 
-        if not dataset_name:
-            return jsonify({"error": "Dataset name is required"}), 400
+        model_type = data.get("model_type", "linear")
+        dataset_type = data.get("dataset_type", "linear")
+        sample_size = int(data.get("sample_size", 300))
+        hyperparams = data.get("hyperparams", {})
 
-        result = get_builtin_dataset(dataset_name)
+        r2_score, y_pred, plot_filename = run_regression(model_type, dataset_type, sample_size, **hyperparams)
 
-        return jsonify(result)
+        return jsonify({
+            "model_type": model_type,
+            "dataset_type": dataset_type,
+            "r2_score": round(r2_score, 4),
+            "plot_url": f"http://127.0.0.1:5000/plots/{plot_filename}"  # URL to access the plot
+        }), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-# Load Iris dataset
-df = sns.load_dataset('iris')
+        return jsonify({"error": str(e)}), 400
 
-# Convert categorical target ('species') into numerical labels
-label_encoder = LabelEncoder()
-df["species"] = label_encoder.fit_transform(df["species"])
+@app.route("/plots/<filename>")
+def get_plot(filename):
+    return send_from_directory(PLOT_DIR, filename)
 
-# Features (X) and target (y)
-X = df.iloc[:, :-1].values  # All feature columns (sepal_length, sepal_width, etc.)
-y = df["species"].values  # Encoded species
-
-# Train Logistic Regression model
-model = LogisticRegression(max_iter=200)
-model.fit(X, y)
-
-@app.route('/api/logistic-regression', methods=['POST'])
-def logistic_regression():
-    try:
-        data = request.json
-        input_features = np.array(data["features"]).reshape(1, -1)  # Convert input to numpy array
-        prediction = model.predict(input_features)
-        predicted_class = label_encoder.inverse_transform(prediction)[0]  # Convert back to original species name
-
-        return jsonify({"prediction": predicted_class})
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
-if __name__ == '_main_':
+if __name__ == "__main__":
     app.run(debug=True)

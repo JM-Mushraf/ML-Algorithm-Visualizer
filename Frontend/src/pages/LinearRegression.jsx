@@ -1,67 +1,35 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import DataSelector from './DataSelector';
-import { Link } from 'react-router-dom';
-import "./LinearRegression.css"
-const LogisticRegression = () => {
-  const [features, setFeatures] = useState([5.1, 3.5, 1.4, 0.2]); 
-  const [prediction, setPrediction] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+import { useState } from "react";
+import axios from "axios";
+import DataSelector from "../components/DataSelector";
+import { Line } from "react-chartjs-2";
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError(null);
+const LinearRegression = () => {
+  const [dataset, setDataset] = useState("");
+  const [graphData, setGraphData] = useState(null);
 
-    try {
-      const response = await axios.post('http://localhost:5000/api/logistic-regression', {
-        features: features.map(Number), 
-      });
-      console.log(response);
-      
-
-      setPrediction(response.data.prediction);
-    } catch (error) {
-      console.error('Error:', error);
-      setError('An error occurred while making the prediction.');
-    } finally {
-      setLoading(false);
-    }
+  const trainModel = async () => {
+    const response = await axios.post("http://127.0.0.1:5000/train/linear-regression", {
+      datasetName: dataset
+    });
+    setGraphData(response.data);
   };
 
   return (
     <div>
-      <h2>Logistic Regression (Iris Dataset)</h2>
-      
-      <DataSelector /> {/* Include dataset selection */}
-      <Link to="/datasets">
-          <button>Select Dataset</button>
-      </Link>
-      <div>
-        <label>
-          Features (Sepal & Petal Length/Width):
-          <input
-            type="text"
-            value={features.join(', ')}
-            onChange={(e) => setFeatures(e.target.value.split(',').map(Number))}
-          />
-        </label>
-      </div>
+      <h2>Linear Regression</h2>
+      <DataSelector onSelect={setDataset} />
+      <button onClick={trainModel}>Train Model</button>
 
-      <button onClick={handleSubmit} disabled={loading}>
-        {loading ? 'Predicting...' : 'Make Prediction'}
-      </button>
-
-      {prediction && (
-        <div>
-          <h3>Prediction:</h3>
-          <p>Predicted Species: {prediction}</p>
-        </div>
+      {graphData && (
+        <Line
+          data={{
+            labels: graphData.x_values,
+            datasets: [{ label: "Best Fit Line", data: graphData.y_values, borderColor: "blue" }]
+          }}
+        />
       )}
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
 };
 
-export default LogisticRegression;
+export default LinearRegression;
