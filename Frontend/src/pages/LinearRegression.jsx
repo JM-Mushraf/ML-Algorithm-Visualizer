@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-
+import DataSelector from './DataSelector';
+import { Link } from 'react-router-dom';
+import "./LinearRegression.css"
 const LogisticRegression = () => {
   const [features, setFeatures] = useState([5.1, 3.5, 1.4, 0.2]); 
   const [prediction, setPrediction] = useState('');
@@ -13,7 +15,7 @@ const LogisticRegression = () => {
 
     try {
       const response = await axios.post('http://localhost:5000/api/logistic-regression', {
-        features: features.map(Number), // Ensure numeric values
+        features: features.map(Number), 
       });
 
       setPrediction(response.data.prediction);
@@ -28,7 +30,11 @@ const LogisticRegression = () => {
   return (
     <div>
       <h2>Logistic Regression (Iris Dataset)</h2>
-
+      
+      <DataSelector /> {/* Include dataset selection */}
+      <Link to="/datasets">
+          <button>Select Dataset</button>
+      </Link>
       <div>
         <label>
           Features (Sepal & Petal Length/Width):
