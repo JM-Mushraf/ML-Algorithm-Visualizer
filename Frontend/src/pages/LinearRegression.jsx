@@ -15,6 +15,8 @@ const LogisticRegression = () => {
       const response = await axios.post('http://localhost:5000/api/logistic-regression', {
         features: features.map(Number), // Ensure numeric values
       });
+      console.log(response);
+      
 
       setPrediction(response.data.prediction);
     } catch (error) {
