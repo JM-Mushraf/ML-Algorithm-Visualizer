@@ -1,17 +1,34 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify,Response
 import numpy as np
 from algorithms.logistic_regression import LogReg,label_encoder
+import matplotlib.pyplot as plt
+import io
+import seaborn as sns
 
+df=sns.load_dataset('iris')
 api_routes = Blueprint('api_routes', __name__)
 
-@api_routes.route('/logistic-regression', methods=['POST'])
-def logistic_regression():
-    try:
-        data = request.json
-        input_features = np.array(data["features"]).reshape(1, -1)  # Convert input to numpy array
-        prediction = LogReg.predict(input_features)
-        predicted_class = label_encoder.inverse_transform(prediction)[0]  # Convert back to original species name
+# @api_routes.route('/logistic-regression', methods=['POST'])
 
-        return jsonify({"prediction": predicted_class})
+@api_routes.route('/visualize', methods=['GET'])
+def visualize():
+    try:
+        # Create a scatter plot
+        print(df.head())
+        plt.figure(figsize=(8, 6))
+        plt.scatter(df['sepal_width'], df['petal_length'], cmap='winter')
+        plt.xlabel("Sepal Width")
+        plt.ylabel("Petal Length")
+        plt.title("Sepal Width vs Petal Length (Iris Dataset)")
+
+        # Save the plot to a bytes buffer
+        img = io.BytesIO()
+        plt.savefig(img, format='png')  # Save as PNG
+        plt.close()  # Close the figure to free memory
+        img.seek(0)  # Move cursor to the start of the image file
+
+        # Return the image as a response
+        return Response(img.getvalue(), mimetype='image/png')
+
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return {"error": str(e)}
