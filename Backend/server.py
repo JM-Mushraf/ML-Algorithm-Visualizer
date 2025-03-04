@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify, send_from_directory
 from regressions import run_regression
 import os
-
+from flask_cors import CORS
 app = Flask(__name__)
+CORS(app)
 
 # Define static folder for serving images
 PLOT_DIR = "static/plots"
