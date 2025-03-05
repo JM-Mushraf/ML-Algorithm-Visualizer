@@ -47,11 +47,21 @@ def run_regression(model_type="linear", dataset_type="linear", sample_size=300, 
         degree = hyperparams.get("degree", 2)
         model = make_pipeline(PolynomialFeatures(degree), LinearRegression())
     elif model_type == "dt":
-        max_depth = hyperparams.get("max_depth", 5)
-        model = DecisionTreeRegressor(max_depth=max_depth)
+        model = DecisionTreeRegressor(
+            max_depth=hyperparams.get("max_depth", 5),
+            min_samples_split=hyperparams.get("min_samples_split", 2),
+            min_samples_leaf=hyperparams.get("min_samples_leaf", 1),
+            max_features=hyperparams.get("max_features", None)  # Use None or "sqrt"
+        )
     elif model_type == "rf":
-        n_estimators = hyperparams.get("n_estimators", 100)
-        model = RandomForestRegressor(n_estimators=n_estimators, random_state=42)
+        model = RandomForestRegressor(
+            n_estimators=hyperparams.get("n_estimators", 100),
+            max_depth=hyperparams.get("max_depth", None),
+            min_samples_split=hyperparams.get("min_samples_split", 2),
+            min_samples_leaf=hyperparams.get("min_samples_leaf", 1),
+            max_features=hyperparams.get("max_features", "sqrt"),  # Use "sqrt" or another valid value
+            random_state=42
+        )
     else:
         raise ValueError("Invalid model type. Choose 'linear', 'polynomial', 'dt', or 'rf'.")
 

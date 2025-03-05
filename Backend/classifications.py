@@ -69,18 +69,39 @@ def run_classification(model_type="logistic", dataset_type="linear", sample_size
     X, y = create_classification_dataset(dataset_type=dataset_type, n_samples=sample_size, noise=noise)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-    # Initialize model
+    # Initialize model with hyperparameters
     if model_type == "logistic":
-        model = LogisticRegression()
+        model = LogisticRegression(
+            C=hyperparams.get("C", 1.0),  # Regularization strength (inverse of lambda)
+            penalty=hyperparams.get("penalty", "l2"),  # Regularization type ('l1', 'l2', 'elasticnet')
+            solver=hyperparams.get("solver", "lbfgs"),  # Optimization algorithm ('lbfgs', 'liblinear', 'newton-cg')
+            max_iter=hyperparams.get("max_iter", 100)  # Maximum number of iterations
+        )
     elif model_type == "dt":
-        max_depth = hyperparams.get("max_depth", 5)
-        model = DecisionTreeClassifier(max_depth=max_depth)
+        model = DecisionTreeClassifier(
+            max_depth=hyperparams.get("max_depth", 5),  # Maximum depth of the tree
+            min_samples_split=hyperparams.get("min_samples_split", 2),  # Minimum samples to split a node
+            min_samples_leaf=hyperparams.get("min_samples_leaf", 1),  # Minimum samples at a leaf node
+            max_features=hyperparams.get("max_features", "auto"),  # Number of features to consider for splitting
+            criterion=hyperparams.get("criterion", "gini")  # Splitting criterion ('gini' or 'entropy')
+        )
     elif model_type == "rf":
-        n_estimators = hyperparams.get("n_estimators", 100)
-        model = RandomForestClassifier(n_estimators=n_estimators, random_state=42)
+        model = RandomForestClassifier(
+            n_estimators=hyperparams.get("n_estimators", 100),  # Number of trees in the forest
+            max_depth=hyperparams.get("max_depth", None),  # Maximum depth of each tree
+            min_samples_split=hyperparams.get("min_samples_split", 2),  # Minimum samples to split a node
+            min_samples_leaf=hyperparams.get("min_samples_leaf", 1),  # Minimum samples at a leaf node
+            max_features=hyperparams.get("max_features", "auto"),  # Number of features to consider for splitting
+            criterion=hyperparams.get("criterion", "gini"),  # Splitting criterion ('gini' or 'entropy')
+            random_state=42  # Random seed for reproducibility
+        )
     elif model_type == "svm":
-        kernel = hyperparams.get("kernel", "linear")
-        model = SVC(kernel=kernel)
+        model = SVC(
+            kernel=hyperparams.get("kernel", "linear"),  # Kernel type ('linear', 'poly', 'rbf', 'sigmoid')
+            C=hyperparams.get("C", 1.0),  # Regularization parameter
+            gamma=hyperparams.get("gamma", "scale"),  # Kernel coefficient ('scale', 'auto', or float)
+            degree=hyperparams.get("degree", 3)  # Degree of polynomial kernel (only for 'poly' kernel)
+        )
     else:
         raise ValueError("Invalid model type. Choose 'logistic', 'dt', 'rf', or 'svm'.")
 
