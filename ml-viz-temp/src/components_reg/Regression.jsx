@@ -41,9 +41,12 @@ function Regression() {
   const [maxIterations, setMaxIterations] = useState(100);
   const [learningRate, setLearningRate] = useState(0.01);
   const [regularization, setRegularization] = useState(0.1);
-  const [hiddenLayers, setHiddenLayers] = useState(2);
-  const [neuronsPerLayer, setNeuronsPerLayer] = useState(64);
-  const [activationFunction, setActivationFunction] = useState("relu");
+  const [maxDepth, setMaxDepth] = useState(4);
+  const [minSamplesSplit, setMinSamplesSplit] = useState(2);
+  const [minSamplesLeaf, setMinSamplesLeaf] = useState(1);
+  const [maxFeatures, setMaxFeatures] = useState("auto");
+  const [polynomialDegree, setPolynomialDegree] = useState(2);
+  const [nEstimators, setNEstimators] = useState(100); // New state for Random Forest
 
   const runAlgorithm = async () => {
     setIsRunning(true);
@@ -56,10 +59,19 @@ function Regression() {
     } else if (algorithm === "linear") {
       hyperparameters.learningRate = learningRate;
       hyperparameters.regularization = regularization;
-    } else if (algorithm === "neural_network") {
-      hyperparameters.hiddenLayers = hiddenLayers;
-      hyperparameters.neuronsPerLayer = neuronsPerLayer;
-      hyperparameters.activationFunction = activationFunction;
+    } else if (algorithm === "dt") {
+      hyperparameters.max_depth = maxDepth;
+      hyperparameters.min_samples_split = minSamplesSplit;
+      hyperparameters.min_samples_leaf = minSamplesLeaf;
+      hyperparameters.max_features = maxFeatures;
+    } else if (algorithm === "polynomial") {
+      hyperparameters.degree = polynomialDegree;
+    } else if (algorithm === "rf") {
+      hyperparameters.n_estimators = nEstimators;
+      hyperparameters.max_depth = maxDepth;
+      hyperparameters.min_samples_split = minSamplesSplit;
+      hyperparameters.min_samples_leaf = minSamplesLeaf;
+      hyperparameters.max_features = maxFeatures;
     }
 
     try {
@@ -79,6 +91,8 @@ function Regression() {
       setVisualizationData({
         plotBase64: response.data.plot_base64,
         r2Score: response.data.r2_score,
+        nIterations:response.data.n_iterations,
+        executionTime:response.data.execution_time
       });
     } catch (error) {
       console.error("Error running algorithm:", error);
@@ -140,10 +154,10 @@ function Regression() {
                   onValueChange={setAlgorithm}
                   options={[
                     { value: "linear", label: "Linear Regression" },
-                    { value: "polynomial", label: "polynomial" },
+                    { value: "polynomial", label: "Polynomial Regression" },
                     { value: "dt", label: "Decision Tree" },
                     { value: "rf", label: "Random Forest" },
-                    { value: "svm", label: "Support Vector Machine" },
+                    
                   ]}
                 />
               </CardContent>
@@ -164,10 +178,8 @@ function Regression() {
                       onValueChange={setDataset}
                       options={[
                         { value: "linear", label: "Linear dataset" },
-                        { value: "u_shaped", label: "u_shaped" },
-                        { value: "concentric", label: "concentric" },
-                        // { value: "wine", label: "Wine Quality" },
-                        // { value: "custom", label: "Custom Dataset" },
+                        { value: "u_shaped", label: "U-shaped" },
+                        { value: "concentric", label: "Concentric" },
                       ]}
                     />
                   </div>
@@ -195,7 +207,7 @@ function Regression() {
             </Card>
 
             {/* Hyperparameters */}
-            <Card className="card">
+            <Card className="card" id='hyperparams' >
               <CardContent className="card-content">
                 <h2 className="section-title">
                   <Layers className="section-icon" />
@@ -272,47 +284,159 @@ function Regression() {
                     </>
                   )}
 
-                  {algorithm === "neural_network" && (
+                  {algorithm === "dt" && (
                     <>
                       <div className="form-field">
-                        <label className="form-label">Hidden Layers</label>
+                        <label className="form-label">Max Depth</label>
                         <Slider
-                          value={[hiddenLayers]}
-                          onValueChange={(values) => setHiddenLayers(values[0])}
+                          value={[maxDepth]}
+                          onValueChange={(values) => setMaxDepth(values[0])}
                           min={1}
-                          max={5}
+                          max={20}
                           step={1}
                         />
                         <div className="slider-range">
                           <span>1</span>
-                          <span>5</span>
+                          <span>20</span>
                         </div>
-                        <span className="slider-value">{hiddenLayers}</span>
+                        <span className="slider-value">{maxDepth}</span>
                       </div>
                       <div className="form-field">
-                        <label className="form-label">Neurons per Layer</label>
+                        <label className="form-label">Min Samples Split</label>
                         <Slider
-                          value={[neuronsPerLayer]}
-                          onValueChange={(values) => setNeuronsPerLayer(values[0])}
-                          min={8}
-                          max={128}
-                          step={8}
+                          value={[minSamplesSplit]}
+                          onValueChange={(values) => setMinSamplesSplit(values[0])}
+                          min={2}
+                          max={20}
+                          step={1}
                         />
                         <div className="slider-range">
-                          <span>8</span>
-                          <span>128</span>
+                          <span>2</span>
+                          <span>20</span>
                         </div>
-                        <span className="slider-value">{neuronsPerLayer}</span>
+                        <span className="slider-value">{minSamplesSplit}</span>
                       </div>
                       <div className="form-field">
-                        <label className="form-label">Activation Function</label>
+                        <label className="form-label">Min Samples Leaf</label>
+                        <Slider
+                          value={[minSamplesLeaf]}
+                          onValueChange={(values) => setMinSamplesLeaf(values[0])}
+                          min={1}
+                          max={20}
+                          step={1}
+                        />
+                        <div className="slider-range">
+                          <span>1</span>
+                          <span>20</span>
+                        </div>
+                        <span className="slider-value">{minSamplesLeaf}</span>
+                      </div>
+                      <div className="form-field">
+                        <label className="form-label">Max Features</label>
                         <Select
-                          value={activationFunction}
-                          onValueChange={setActivationFunction}
+                          value={maxFeatures}
+                          onValueChange={setMaxFeatures}
                           options={[
-                            { value: "relu", label: "ReLU" },
-                            { value: "sigmoid", label: "Sigmoid" },
-                            { value: "tanh", label: "Tanh" },
+                            { value: "auto", label: "Auto" },
+                            { value: "sqrt", label: "Sqrt" },
+                            { value: "log2", label: "Log2" },
+                          ]}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {algorithm === "polynomial" && (
+                    <>
+                      <div className="form-field">
+                        <label className="form-label">Polynomial Degree</label>
+                        <Slider
+                          value={[polynomialDegree]}
+                          onValueChange={(values) => setPolynomialDegree(values[0])}
+                          min={1}
+                          max={10}
+                          step={1}
+                        />
+                        <div className="slider-range">
+                          <span>1</span>
+                          <span>10</span>
+                        </div>
+                        <span className="slider-value">{polynomialDegree}</span>
+                      </div>
+                    </>
+                  )}
+
+                  {algorithm === "rf" && (
+                    <>
+                      <div className="form-field">
+                        <label className="form-label">Number of Trees</label>
+                        <Slider
+                          value={[nEstimators]}
+                          onValueChange={(values) => setNEstimators(values[0])}
+                          min={10}
+                          max={200}
+                          step={10}
+                        />
+                        <div className="slider-range">
+                          <span>10</span>
+                          <span>200</span>
+                        </div>
+                        <span className="slider-value">{nEstimators}</span>
+                      </div>
+                      <div className="form-field">
+                        <label className="form-label">Max Depth</label>
+                        <Slider
+                          value={[maxDepth]}
+                          onValueChange={(values) => setMaxDepth(values[0])}
+                          min={1}
+                          max={20}
+                          step={1}
+                        />
+                        <div className="slider-range">
+                          <span>1</span>
+                          <span>20</span>
+                        </div>
+                        <span className="slider-value">{maxDepth}</span>
+                      </div>
+                      <div className="form-field">
+                        <label className="form-label">Min Samples Split</label>
+                        <Slider
+                          value={[minSamplesSplit]}
+                          onValueChange={(values) => setMinSamplesSplit(values[0])}
+                          min={2}
+                          max={20}
+                          step={1}
+                        />
+                        <div className="slider-range">
+                          <span>2</span>
+                          <span>20</span>
+                        </div>
+                        <span className="slider-value">{minSamplesSplit}</span>
+                      </div>
+                      <div className="form-field">
+                        <label className="form-label">Min Samples Leaf</label>
+                        <Slider
+                          value={[minSamplesLeaf]}
+                          onValueChange={(values) => setMinSamplesLeaf(values[0])}
+                          min={1}
+                          max={20}
+                          step={1}
+                        />
+                        <div className="slider-range">
+                          <span>1</span>
+                          <span>20</span>
+                        </div>
+                        <span className="slider-value">{minSamplesLeaf}</span>
+                      </div>
+                      <div className="form-field">
+                        <label className="form-label">Max Features</label>
+                        <Select
+                          value={maxFeatures}
+                          onValueChange={setMaxFeatures}
+                          options={[
+                            { value: "auto", label: "Auto" },
+                            { value: "sqrt", label: "Sqrt" },
+                            { value: "log2", label: "Log2" },
                           ]}
                         />
                       </div>
@@ -427,8 +551,8 @@ function Regression() {
                           <p className="placeholder-text">
                             Watch the algorithm work step by step with an animated visualization of each iteration.
                           </p>
-                          <Button onClick={runAlgorithm} className="run-btn">
-                            Run Animation
+                          <Button className="run-btn">
+                            In Development...
                           </Button>
                         </div>
                       )}
@@ -453,11 +577,15 @@ function Regression() {
                   </div>
                   <div className="metric">
                     <h3 className="metric-label">Iterations</h3>
-                    <div className="metric-value iterations">--</div>
+                    <div className="metric-value iterations">{visualizationData.nIterations !== null
+                        ? visualizationData.nIterations
+                        : "--"}</div>
                   </div>
                   <div className="metric">
                     <h3 className="metric-label">Execution Time</h3>
-                    <div className="metric-value time">--</div>
+                    <div className="metric-value time">{visualizationData.executionTime !== null
+                        ? visualizationData.executionTime
+                        : "--"}</div>
                   </div>
                 </div>
               </CardContent>

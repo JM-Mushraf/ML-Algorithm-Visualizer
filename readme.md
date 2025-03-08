@@ -26,3 +26,10 @@ X, y = generate_dataset(dataset_type)
 
 print(X[:5])  # Print first 5 data points
 print(y[:5])
+
+
+1.svm
+
+3.knn-k
+4.naive bais
+5.boosting- xg boost
