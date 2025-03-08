@@ -1,9 +1,12 @@
 "use client"
 import { motion } from "framer-motion"
 import { LineChart, BarChart3, Brain } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+
 import "./AlgorithmsContent.css"
 
 function AlgorithmsContent() {
+  const navigate=useNavigate()
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -26,7 +29,7 @@ function AlgorithmsContent() {
           </p>
           <div className="algorithm-footer">
             <span className="difficulty-label">Difficulty: Beginner</span>
-            <button className="learn-more-button green">Learn more →</button>
+            <a className="learn-more-button green" href="https://www.geeksforgeeks.org/ml-linear-regression/" target="_blank" >Learn more →</a>
           </div>
         </div>
 

@@ -3,63 +3,49 @@ import { AnimatePresence } from "framer-motion"
 import ParticleBackground from "./components/ParticleBackground"
 import Sidebar from "./components/Sidebar"
 import HomeContent from "./components/HomeContent"
-// import RegressionContent from "./components/RegressionContent"
 import Regression from "./components_reg/Regression"
 import ClassificationContent from "./components/ClassificationContent"
 import UploadContent from "./components/UploadContent"
 import AlgorithmsContent from "./components/AlgorithmsContent"
 import { Menu, X } from "lucide-react"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import "./App.css"
+import LinReg from "./algorithmPages/LinReg"
 
 function App() {
-  const [activeTab, setActiveTab] = useState("home")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const menuItems = [
-    { id: "regression", label: "Regression Visualizer", icon: "line-chart" },
-    { id: "classification", label: "Classification Visualizer", icon: "bar-chart" },
-    { id: "upload", label: "Upload Dataset", icon: "upload" },
-    { id: "algorithms", label: "Learn Algorithms", icon: "brain" },
-  ]
-
   return (
-    <div className="app">
-      {/* Animated background */}
-      <ParticleBackground />
+    <Router>
+      <div className="app">
+        <ParticleBackground />
 
-      {/* Mobile menu button */}
-      <div className="mobile-menu-button">
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="menu-button">
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile menu button */}
+        <div className="mobile-menu-button">
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="menu-button">
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
+
+        {/* Sidebar */}
+        <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+
+        {/* Main content */}
+        <main className={`main-content ${isMobileMenuOpen ? "blur" : ""}`}>
+          <AnimatePresence mode="wait">
+            <Routes>
+              <Route path="/" element={<HomeContent />} />
+              <Route path="/regression" element={<Regression />} />
+              <Route path="/classification" element={<ClassificationContent />} />
+              <Route path="/upload" element={<UploadContent />} />
+              <Route path="/algorithms" element={<AlgorithmsContent />} />
+              <Route path="/linear-regression" element={<LinReg/>} />
+            </Routes>
+          </AnimatePresence>
+        </main>
       </div>
-
-      {/* Sidebar */}
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        menuItems={menuItems}
-        isMobileMenuOpen={isMobileMenuOpen}
-        setIsMobileMenuOpen={setIsMobileMenuOpen}
-      />
-
-      {/* Main content */}
-      <main className={`main-content ${isMobileMenuOpen ? "blur" : ""}`}>
-        <AnimatePresence mode="wait">
-          {activeTab === "home" && <HomeContent key="home" />}
-
-          {activeTab === "regression" && <Regression key="regression" />}
-
-          {activeTab === "classification" && <ClassificationContent key="classification" />}
-
-          {activeTab === "upload" && <UploadContent key="upload" />}
-
-          {activeTab === "algorithms" && <AlgorithmsContent key="algorithms" />}
-        </AnimatePresence>
-      </main>
-    </div>
+    </Router>
   )
 }
 
 export default App
-

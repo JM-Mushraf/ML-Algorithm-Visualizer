@@ -1,22 +1,17 @@
 "use client"
+
+import { NavLink } from "react-router-dom"
 import { ChevronRight, LineChart, BarChart3, Upload, Brain, Info } from "lucide-react"
 import "./Sidebar.css"
 
-function Sidebar({ activeTab, setActiveTab, menuItems, isMobileMenuOpen, setIsMobileMenuOpen }) {
-  const getIcon = (iconName) => {
-    switch (iconName) {
-      case "line-chart":
-        return <LineChart className="menu-icon" />
-      case "bar-chart":
-        return <BarChart3 className="menu-icon" />
-      case "upload":
-        return <Upload className="menu-icon" />
-      case "brain":
-        return <Brain className="menu-icon" />
-      default:
-        return null
-    }
-  }
+function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }) {
+  const menuItems = [
+    { path: "/", label: "Home", icon: <LineChart className="menu-icon" /> },
+    { path: "/regression", label: "Regression Visualizer", icon: <LineChart className="menu-icon" /> },
+    { path: "/classification", label: "Classification Visualizer", icon: <BarChart3 className="menu-icon" /> },
+    { path: "/upload", label: "Upload Dataset", icon: <Upload className="menu-icon" /> },
+    { path: "/algorithms", label: "Learn Algorithms", icon: <Brain className="menu-icon" /> },
+  ]
 
   return (
     <div className={`sidebar ${isMobileMenuOpen ? "sidebar-open" : "sidebar-closed"}`}>
@@ -28,20 +23,17 @@ function Sidebar({ activeTab, setActiveTab, menuItems, isMobileMenuOpen, setIsMo
         <nav className="sidebar-nav">
           <ul className="sidebar-menu">
             {menuItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => {
-                    setActiveTab(item.id)
-                    setIsMobileMenuOpen(false)
-                  }}
-                  className={`sidebar-menu-item ${activeTab === item.id ? "active" : ""}`}
+              <li key={item.path}>
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) => `sidebar-menu-item ${isActive ? "active" : ""}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <span className={`sidebar-icon ${activeTab === item.id ? "active-icon" : ""}`}>
-                    {getIcon(item.icon)}
-                  </span>
+                  <span className="sidebar-icon">{item.icon}</span>
                   <span>{item.label}</span>
-                  {activeTab === item.id && <ChevronRight className="chevron-icon" />}
-                </button>
+                  {/** Show Chevron only if active */}
+                  <ChevronRight className="chevron-icon" />
+                </NavLink>
               </li>
             ))}
           </ul>
@@ -59,4 +51,3 @@ function Sidebar({ activeTab, setActiveTab, menuItems, isMobileMenuOpen, setIsMo
 }
 
 export default Sidebar
-

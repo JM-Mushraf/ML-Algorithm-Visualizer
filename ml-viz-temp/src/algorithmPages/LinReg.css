@@ -1,0 +1,202 @@
+/* Root Container */
+.linear-regression-page {
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #0f172a, #1e293b);
+    color: #e2e8f0;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  /* Hero Section */
+  .linear-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+  }
+  
+  .linear-hero-title {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #38bdf8;
+    margin-bottom: 1rem;
+  }
+  
+  .linear-hero-subtitle {
+    font-size: 1.25rem;
+    color: #94a3b8;
+    margin-bottom: 2rem;
+  }
+  
+  .linear-hero-button {
+    display: flex;
+    align-items: center;
+    background: #38bdf8;
+    color: #0f172a;
+    font-weight: bold;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(56, 189, 248, 0.3);
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .linear-hero-button:hover {
+    background: #0284c7;
+    transform: scale(1.05);
+  }
+  
+  /* Section Titles */
+  .linear-what-is-title,
+  .linear-how-it-works-title,
+  .linear-visualization-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-align: center;
+    color: #38bdf8;
+    margin-bottom: 1rem;
+  }
+  
+  /* Section Containers */
+  .linear-what-is,
+  .linear-how-it-works,
+  .linear-visualization {
+    padding: 5rem 2rem;
+    background: #1e293b;
+  }
+  
+  .linear-what-is-container,
+  .linear-how-it-works-container,
+  .linear-visualization-container {
+    max-width: 800px;
+    margin: auto;
+  }
+  
+  /* Card Styles */
+  .linear-what-is-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .linear-what-is-card {
+    background: #0f172a;
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .linear-what-is-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .linear-what-is-icon {
+    width: 50px;
+    height: 50px;
+    color: #38bdf8;
+    margin-bottom: 1rem;
+  }
+  
+  .linear-what-is-card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #38bdf8;
+  }
+  
+  .linear-what-is-card-description {
+    color: #94a3b8;
+    font-size: 1rem;
+  }
+  
+  /* Steps */
+  .linear-how-it-works-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .linear-how-it-works-step {
+    display: flex;
+    align-items: center;
+    background: #0f172a;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .linear-how-it-works-step:hover {
+    transform: scale(1.05);
+  }
+  
+  .linear-how-it-works-step-number {
+    width: 40px;
+    height: 40px;
+    background: #38bdf8;
+    color: #0f172a;
+    font-weight: bold;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+  }
+  
+  .linear-how-it-works-step-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #38bdf8;
+  }
+  
+  .linear-how-it-works-step-description {
+    color: #94a3b8;
+    font-size: 1rem;
+  }
+  
+  /* Visualization Section */
+  .linear-visualization-image {
+    background: #0f172a;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.1);
+  }
+  
+  .linear-visualization-image img {
+    width: 100%;
+    border-radius: 8px;
+  }
+  
+  /* Footer */
+  .linear-footer {
+    background: #0f172a;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .linear-footer-social {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .linear-footer-icon {
+    width: 30px;
+    height: 30px;
+    color: #38bdf8;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .linear-footer-icon:hover {
+    transform: scale(1.2);
+  }
+  
+  .linear-footer-text {
+    font-size: 0.9rem;
+    color: #94a3b8;
+  }
+  
