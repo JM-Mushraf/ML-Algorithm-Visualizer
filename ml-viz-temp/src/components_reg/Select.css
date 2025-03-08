@@ -1,0 +1,97 @@
+.select-container {
+  position: relative;
+  width: 100%;
+}
+
+.select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  background-color: rgba(55, 65, 81, 0.5);
+  border: 1px solid #4b5563;
+  border-radius: 0.375rem;
+  color: white;
+  cursor: pointer;
+  text-align: left;
+}
+
+.select-trigger:focus {
+  outline: none;
+  border-color: #9333ea;
+  box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.3);
+}
+
+.select-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-left: 0.5rem;
+}
+
+.select-content {
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+  margin-top: 0.25rem;
+  background-color: #1f2937;
+  border: 1px solid #4b5563;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  max-height: 15rem;
+  overflow: auto;
+}
+
+.select-group {
+  padding: 0.25rem;
+}
+
+.select-label {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.select-item {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: white;
+}
+
+.select-item:hover {
+  background-color: #374151;
+}
+
+.select-item.selected {
+  background-color: rgba(124, 58, 237, 0.3);
+  color: #e2e8f0;
+}
+
+.select-separator {
+  height: 1px;
+  background-color: #4b5563;
+  margin: 0.25rem 0;
+}
+
+.select-scroll-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.5rem;
+  background-color: #1f2937;
+  border-bottom: 1px solid #4b5563;
+  cursor: pointer;
+}
+
+.select-scroll-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.select-scroll-icon.rotate {
+  transform: rotate(180deg);
+}

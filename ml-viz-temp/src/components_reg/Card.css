@@ -1,0 +1,12 @@
+.card-t {
+  border-radius: 0.5rem;
+  border: 1px solid #374151;
+  background-color: rgba(31, 41, 55, 0.5);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.card-content-t {
+  padding: 1.5rem;
+}
