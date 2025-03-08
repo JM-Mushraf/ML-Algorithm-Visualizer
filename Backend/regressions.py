@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')  # Set non-GUI backend before importing pyplot
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
 from sklearn.linear_model import LinearRegression
