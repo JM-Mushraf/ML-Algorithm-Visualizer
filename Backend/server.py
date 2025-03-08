@@ -3,6 +3,7 @@ from flask_cors import CORS  # Import CORS
 import numpy as np
 import io
 import base64
+import time  # Import time module to measure execution time
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -12,6 +13,7 @@ from dataset import generate_dataset
 import matplotlib
 matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
+
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
@@ -41,8 +43,11 @@ def plot_results(X_test, y_test, y_pred, model_type):
     return img_base64
 
 def run_regression(model_type="linear", dataset_type="linear", sample_size=300, **hyperparams):
-    """Runs the regression model and returns R² score and the Base64 image."""
+    """Runs the regression model and returns R² score, execution time, and the Base64 image."""
     X_train, X_test, y_train, y_test = generate_dataset(dataset_type, sample_size)
+
+    # Start measuring execution time
+    start_time = time.time()
 
     if model_type == "linear":
         model = LinearRegression()
@@ -58,14 +63,28 @@ def run_regression(model_type="linear", dataset_type="linear", sample_size=300, 
     else:
         raise ValueError("Invalid model type. Choose 'linear', 'polynomial', 'dt', or 'rf'.")
 
+    # Fit the model
     model.fit(X_train, y_train)
+
+    # Predict on test data
     y_pred = model.predict(X_test)
+
+    # Calculate R² score
     r2_score = model.score(X_test, y_test)
+
+    # Calculate execution time
+    execution_time = time.time() - start_time
 
     # Generate Base64 plot
     plot_base64 = plot_results(X_test, y_test, y_pred, model_type)
 
-    return r2_score, y_pred, plot_base64
+    # Number of iterations (for iterative algorithms like Random Forest)
+    if model_type == "rf":
+        n_iterations = n_estimators  # Number of trees in Random Forest
+    else:
+        n_iterations = 1  # Non-iterative models like Linear Regression
+
+    return r2_score, y_pred, plot_base64, n_iterations, execution_time
 
 @app.route('/regression', methods=['POST'])
 def regression():
@@ -76,7 +95,7 @@ def regression():
     hyperparameters = data.get('hyperparameters', {})
 
     try:
-        r2_score, y_pred, plot_base64 = run_regression(
+        r2_score, y_pred, plot_base64, n_iterations, execution_time = run_regression(
             model_type=model_type,
             dataset_type=dataset_type,
             sample_size=sample_size,
@@ -84,7 +103,9 @@ def regression():
         )
         return jsonify({
             'r2_score': r2_score,
-            'plot_base64': plot_base64
+            'plot_base64': plot_base64,
+            'n_iterations': n_iterations,
+            'execution_time': round(execution_time, 4)
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 400

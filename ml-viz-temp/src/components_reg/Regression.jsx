@@ -91,6 +91,8 @@ function Regression() {
       setVisualizationData({
         plotBase64: response.data.plot_base64,
         r2Score: response.data.r2_score,
+        nIterations:response.data.n_iterations,
+        executionTime:response.data.execution_time
       });
     } catch (error) {
       console.error("Error running algorithm:", error);
@@ -155,7 +157,7 @@ function Regression() {
                     { value: "polynomial", label: "Polynomial Regression" },
                     { value: "dt", label: "Decision Tree" },
                     { value: "rf", label: "Random Forest" },
-                    { value: "svm", label: "Support Vector Machine" },
+                    
                   ]}
                 />
               </CardContent>
@@ -205,7 +207,7 @@ function Regression() {
             </Card>
 
             {/* Hyperparameters */}
-            <Card className="card">
+            <Card className="card" id='hyperparams' >
               <CardContent className="card-content">
                 <h2 className="section-title">
                   <Layers className="section-icon" />
@@ -549,8 +551,8 @@ function Regression() {
                           <p className="placeholder-text">
                             Watch the algorithm work step by step with an animated visualization of each iteration.
                           </p>
-                          <Button onClick={runAlgorithm} className="run-btn">
-                            Run Animation
+                          <Button className="run-btn">
+                            In Development...
                           </Button>
                         </div>
                       )}
@@ -575,11 +577,15 @@ function Regression() {
                   </div>
                   <div className="metric">
                     <h3 className="metric-label">Iterations</h3>
-                    <div className="metric-value iterations">--</div>
+                    <div className="metric-value iterations">{visualizationData.nIterations !== null
+                        ? visualizationData.nIterations
+                        : "--"}</div>
                   </div>
                   <div className="metric">
                     <h3 className="metric-label">Execution Time</h3>
-                    <div className="metric-value time">--</div>
+                    <div className="metric-value time">{visualizationData.executionTime !== null
+                        ? visualizationData.executionTime
+                        : "--"}</div>
                   </div>
                 </div>
               </CardContent>

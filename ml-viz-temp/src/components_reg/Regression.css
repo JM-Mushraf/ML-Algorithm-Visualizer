@@ -170,19 +170,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: sticky;
+  bottom: 10px;
 }
 
 .run-btn:hover {
   background: linear-gradient(to right, #7e22ce, #0e7490);
 }
-#selc-op{
+#selc-op {
   height: 20vh;
   overflow: inherit;
   z-index: 1000;
 }
-#selc-op2{
+#selc-op2 {
   height: 20vh;
-  overflow-y:inherit;
+  overflow-y: inherit;
   z-index: 10000;
 }
 .run-btn:disabled {
@@ -200,6 +202,11 @@
   border-radius: 50%;
 }
 
+#hyperparams {
+  /* background-color: red; */
+  max-height: 30rem;
+  overflow: scroll;
+}
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -329,7 +336,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(to bottom right, rgba(31, 41, 55, 0.5), rgba(17, 24, 39, 0.5));
+  background: linear-gradient(
+    to bottom right,
+    rgba(31, 41, 55, 0.5),
+    rgba(17, 24, 39, 0.5)
+  );
   position: relative;
 }
 
@@ -346,7 +357,10 @@
   -webkit-backdrop-filter: blur(4px);
   background-color: rgba(17, 24, 39, 0.4);
   border-radius: 0.75rem;
-  max-width: 28rem;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
 }
 
 .placeholder-icon {
