@@ -1,3 +1,28 @@
+.classification-container {
+  width: 88vw;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.classification-section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  animation: fadeIn 1s ease-in-out;
+}
+select option{
+  color: black;
+  background-color: none;
+}
+.gradient-text {
+  background: linear-gradient(to right, #06b6d4, #9333ea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Grid Layout */
 .classification-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -5,74 +30,271 @@
   margin-bottom: 1.5rem;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .classification-grid {
     grid-template-columns: 2fr 1fr;
   }
 }
 
-.visualization-icon.cyan {
-  color: #06b6d4;
+.classification-visualization-panel {
+  background-color: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  animation: slideIn 0.5s ease-in-out;
 }
 
-.form-select.cyan:focus {
+.classification-visualization-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: #94a3b8;
+  transition: opacity 0.3s ease;
+}
+
+.classification-visualization-image {
+  width: 90%;
+  height: 450px;
+  border-radius: 0.5rem;
+  transition: transform 0.3s ease;
+}
+
+.classification-visualization-icon.cyan {
+  color: #06b6d4;
+  animation: pulse 2s infinite;
+}
+
+/* Parameters Panel */
+.classification-parameters-panel {
+  background-color: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  max-height: 500px;
+  overflow-y: auto;
+  position: relative;
+  animation: slideIn 0.5s ease-in-out;
+}
+
+.classification-parameters-form {
+  display: grid;
+  gap: 1rem;
+  padding-bottom: 4rem;
+}
+
+.classification-sticky-button-container {
+  position: sticky;
+  bottom: 0;
+  padding: 1rem 0;
+}
+
+/* Form Elements */
+.classification-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.classification-form-label {
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.classification-form-select.cyan,
+.classification-form-input.cyan {
+  background-color: rgba(55, 65, 81, 0.1);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  color: #ffffff;
+  font-size: 0.875rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.classification-form-select.cyan:focus,
+.classification-form-input.cyan:focus {
+  outline: none;
+  border-color: #06b6d4;
   box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.5);
 }
 
-.form-range.cyan {
+.classification-form-range.cyan {
   accent-color: #06b6d4;
 }
 
-.run-button.cyan {
-  background-image: linear-gradient(to right, #06b6d4, #9333ea);
+.classification-range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #94a3b8;
 }
 
-.confusion-matrix {
+.classification-run-button.cyan {
+  background-image: linear-gradient(to right, #06b6d4, #9333ea);
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  color: #ffffff;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  width: 100%;
+}
+
+.classification-run-button.cyan:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* Metrics Grid */
+.classification-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  animation: fadeIn 1s ease-in-out;
+}
+
+@media (min-width: 768px) {
+  .classification-metrics-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.classification-metrics-panel {
+  background-color: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.classification-metrics-panel:hover {
+  transform: translateY(-5px);
+}
+
+.classification-metrics-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.classification-metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.classification-metric-label {
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.classification-metric-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.classification-confusion-matrix {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
   margin-top: 1rem;
 }
 
-.matrix-cell {
+.classification-matrix-cell {
   padding: 1rem;
   border-radius: 0.5rem;
   text-align: center;
+  transition: transform 0.3s ease;
 }
 
-.true-positive {
+.classification-matrix-cell:hover {
+  transform: scale(1.05);
+}
+
+.classification-true-positive {
   background-color: rgba(16, 185, 129, 0.2);
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-.false-negative {
+.classification-false-negative {
   background-color: rgba(239, 68, 68, 0.2);
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-.false-positive {
+.classification-false-positive {
   background-color: rgba(239, 68, 68, 0.2);
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-.true-negative {
+.classification-true-negative {
   background-color: rgba(16, 185, 129, 0.2);
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-.cell-value {
-  font-size: 1.5rem;
+.classification-cell-value {
+  font-size: 1.25rem;
   font-weight: 700;
 }
 
-.cell-label {
+.classification-cell-label {
   font-size: 0.75rem;
   color: #94a3b8;
 }
-.visualization-panel{
-  background-color: rgba(17, 24, 39, 0.6);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(55, 65, 81, 0.5);
-  border-radius: var(--radius);
-  /* padding: 1.5rem; */
+
+/* Scrollbar Styling */
+.classification-parameters-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.classification-parameters-panel::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.classification-parameters-panel::-webkit-scrollbar-thumb {
+  background: #06b6d4;
+  border-radius: 4px;
+}
+
+.classification-parameters-panel::-webkit-scrollbar-thumb:hover {
+  background: #9333ea;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
