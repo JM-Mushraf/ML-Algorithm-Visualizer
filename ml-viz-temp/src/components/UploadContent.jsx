@@ -1,9 +1,43 @@
-"use client"
-import { motion } from "framer-motion"
-import { Upload, BarChart3, LineChart } from "lucide-react"
-import "./UploadContent.css"
+"use client";
+import { motion } from "framer-motion";
+import { Upload, BarChart3, LineChart } from "lucide-react";
+import { useState } from "react";
+import axios from "axios";
+import "./UploadContent.css";
 
 function UploadContent() {
+  const [file, setFile] = useState(null);
+  const [analysisResults, setAnalysisResults] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      alert("Please select a file first!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post("http://localhost:5000/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      console.log("Response:", response.data);
+      setAnalysisResults(response.data.analysis);
+      setError(null);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setError("Error uploading file. Please try again.");
+      setAnalysisResults(null);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -20,7 +54,15 @@ function UploadContent() {
           <h3 className="dropzone-title">Drag and drop your dataset</h3>
           <p className="dropzone-text">Upload CSV, Excel, or JSON files to visualize and analyze your data</p>
 
-          <button className="browse-button">Browse Files</button>
+          <input
+            type="file"
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+            id="file-input"
+          />
+          <label htmlFor="file-input" className="browse-button">
+            Browse Files
+          </label>
         </div>
       </div>
 
@@ -58,45 +100,45 @@ function UploadContent() {
           </ul>
         </div>
 
-        <div className="recent-uploads glass-panel">
-          <h3 className="panel-title">Recent Uploads</h3>
-          <div className="table-container">
-            <table className="uploads-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Size</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>customer_data.csv</td>
-                  <td>CSV</td>
-                  <td>2.4 MB</td>
-                  <td>Today</td>
-                </tr>
-                <tr>
-                  <td>sales_2023.xlsx</td>
-                  <td>Excel</td>
-                  <td>4.7 MB</td>
-                  <td>Yesterday</td>
-                </tr>
-                <tr>
-                  <td>sensor_readings.json</td>
-                  <td>JSON</td>
-                  <td>1.2 MB</td>
-                  <td>3 days ago</td>
-                </tr>
-              </tbody>
-            </table>
+        <button onClick={handleUpload} className="upload-button">
+          Upload File
+        </button>
+      </div>
+
+      {error && <div className="error-message">{error}</div>}
+
+      {analysisResults && (
+        <div className="analysis-results">
+          <h2 className="analysis-title">Analysis Results</h2>
+          <div className="analysis-info">
+            <h3>Basic Information</h3>
+            <p>Number of Rows: {analysisResults.info.num_rows}</p>
+            <p>Number of Columns: {analysisResults.info.num_columns}</p>
+            <p>Columns: {analysisResults.info.columns.join(", ")}</p>
+            <h3>Missing Values</h3>
+            <ul>
+              {Object.entries(analysisResults.info.missing_values).map(([col, count]) => (
+                <li key={col}>
+                  {col}: {count}
+                </li>
+              ))}
+            </ul>
+            <h3>Dataset Preview</h3>
+            <pre>{JSON.stringify(analysisResults.info.dataset_preview, null, 2)}</pre>
+            <h3>Best Algorithm</h3>
+            <p>Algorithm: {analysisResults.best_algorithm}</p>
+            <p>Accuracy: {analysisResults.accuracy.toFixed(2)}</p>
+            <h3>Best Features</h3>
+            <pre>{JSON.stringify(analysisResults.best_features, null, 2)}</pre>
+          </div>
+          <div className="visualizations">
+            <h3>Heatmap</h3>
+            <img src={`http://localhost:5000/uploads/${analysisResults.visualization_paths.heatmap.split('/').pop()}`} alt="Heatmap" />
           </div>
         </div>
-      </div>
+      )}
     </motion.div>
-  )
+  );
 }
 
-export default UploadContent
-
+export default UploadContent;

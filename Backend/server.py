@@ -7,17 +7,22 @@ import base64
 import time
 import matplotlib
 matplotlib.use('Agg')
+import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.svm import SVC
 from sklearn.preprocessing import PolynomialFeatures
+from flask import send_from_directory
 from sklearn.pipeline import make_pipeline
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from dataset import create_classification_dataset, generate_dataset
 
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
@@ -143,6 +148,114 @@ def run_regression(model_type="linear", dataset_type="linear", sample_size=300, 
         n_iterations = 1  # Non-iterative models like Linear Regression
 
     return r2_score, y_pred, plot_base64, n_iterations, execution_time
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
+@app.route("/upload", methods=["POST"])
+def upload_file():
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+
+    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(file_path)
+    
+    # Analyze the file and generate visualizations
+    analysis_results = analyze_file(file_path)
+    
+    return jsonify({"message": "File uploaded successfully", "file_path": file_path, "analysis": analysis_results})
+
+def analyze_file(file_path):
+    # Load the file into a pandas DataFrame
+    df = pd.read_csv(file_path)  # Assuming the file is a CSV, adjust accordingly for other formats
+    
+    # Basic information about the data
+    info = {
+        "num_rows": df.shape[0],
+        "num_columns": df.shape[1],
+        "columns": df.columns.tolist(),
+        "missing_values": df.isnull().sum().to_dict(),
+        "dataset_preview": df.head().to_dict()  # First 5 rows of the dataset
+    }
+    
+    # Generate heatmap
+    visualization_paths = generate_heatmap(df)
+    
+    # Find the best algorithm, its accuracy, and best features
+    best_algorithm, accuracy, best_features = find_best_algorithm(df)
+    
+    return {"info": info, "visualization_paths": visualization_paths, "best_algorithm": best_algorithm, "accuracy": accuracy, "best_features": best_features}
+
+def generate_heatmap(df):
+    visualization_paths = {}
+    
+    # Heatmap for correlation matrix
+    if df.select_dtypes(include=['number']).shape[1] > 1:
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(df.corr(), annot=True, cmap='coolwarm')
+        plt.title("Correlation Heatmap")
+        heatmap_path = os.path.join(UPLOAD_FOLDER, "heatmap.png")
+        plt.savefig(heatmap_path)
+        plt.close()
+        visualization_paths["heatmap"] = "uploads/heatmap.png"
+    
+    return visualization_paths
+
+def find_best_algorithm(df):
+    # Assuming the last column is the target variable
+    X = df.iloc[:, :-1]
+    y = df.iloc[:, -1]
+    
+    # Convert categorical columns to numerical
+    X = pd.get_dummies(X)
+    
+    # Split the data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # Define models and parameters for GridSearchCV
+    models = {
+        "RandomForest": RandomForestClassifier(),
+        "SVM": SVC(),
+        "LogisticRegression": LogisticRegression()
+    }
+    
+    params = {
+        "RandomForest": {"n_estimators": [10, 50, 100]},
+        "SVM": {"C": [0.1, 1, 10], "kernel": ["linear", "rbf"]},
+        "LogisticRegression": {"C": [0.1, 1, 10]}
+    }
+    
+    best_algorithm = None
+    best_score = 0
+    best_accuracy = 0
+    best_features = None
+    
+    # Perform GridSearchCV for each model
+    for model_name, model in models.items():
+        grid_search = GridSearchCV(model, params[model_name], cv=5)
+        grid_search.fit(X_train, y_train)
+        score = grid_search.best_score_
+        
+        if score > best_score:
+            best_score = score
+            best_algorithm = model_name
+            best_accuracy = accuracy_score(y_test, grid_search.predict(X_test))
+            
+            # Get feature importance or coefficients
+            if model_name == "RandomForest":
+                best_features = dict(zip(X.columns, grid_search.best_estimator_.feature_importances_))
+            elif model_name == "LogisticRegression":
+                best_features = dict(zip(X.columns, grid_search.best_estimator_.coef_[0]))
+            else:
+                best_features = "Feature importance not available for this model."
+    
+    return best_algorithm, best_accuracy, best_features
+
 
 @app.route('/classification', methods=['POST', 'OPTIONS'])
 def classification():
