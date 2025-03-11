@@ -11,6 +11,7 @@ import { Menu, X } from "lucide-react"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import "./App.css"
 import LinReg from "./algorithmPages/LinReg"
+import Chatbot from "./chatbot/Chatbot"
 
 function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -41,6 +42,7 @@ function App() {
               <Route path="/algorithms" element={<AlgorithmsContent />} />
               <Route path="/linear-regression" element={<LinReg/>} />
             </Routes>
+            <Chatbot/>
           </AnimatePresence>
         </main>
       </div>
