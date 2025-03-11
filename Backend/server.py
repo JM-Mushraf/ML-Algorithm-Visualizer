@@ -14,22 +14,24 @@ from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.svm import SVC
-from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import PolynomialFeatures, LabelEncoder
 from flask import send_from_directory
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from dataset import create_classification_dataset, generate_dataset
 
+# Set up upload and plot directories
 UPLOAD_FOLDER = "uploads"
+PLOT_DIR = "static/plots"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(PLOT_DIR, exist_ok=True)
+
+# Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Ensure 'static/plots' directory exists
-PLOT_DIR = "static/plots"
-os.makedirs(PLOT_DIR, exist_ok=True)
-
+# Helper function to plot decision boundaries for classification models
 def plot_decision_boundary(X, y, model, model_type, plot_path):
     """Plot the decision boundary of a classification model."""
     plt.figure(figsize=(8, 6))
@@ -47,6 +49,7 @@ def plot_decision_boundary(X, y, model, model_type, plot_path):
     plt.savefig(plot_path)
     plt.close()
 
+# Classification model runner
 def run_classification(model_type="logistic", dataset_type="linear", sample_size=200, noise=0.1, **hyperparams):
     """Run classification model and return metrics and plot filename."""
     X, y = create_classification_dataset(dataset_type=dataset_type, n_samples=sample_size, noise=noise)
@@ -80,6 +83,7 @@ def run_classification(model_type="logistic", dataset_type="linear", sample_size
 
     return metrics, plot_filename
 
+# Helper function to plot regression results
 def plot_results(X_test, y_test, y_pred, model_type):
     """Generate a regression plot and return it as a Base64 string."""
     plt.figure(figsize=(6, 4))
@@ -105,6 +109,7 @@ def plot_results(X_test, y_test, y_pred, model_type):
     
     return img_base64
 
+# Regression model runner
 def run_regression(model_type="linear", dataset_type="linear", sample_size=300, **hyperparams):
     """Runs the regression model and returns R² score, execution time, and the Base64 image."""
     X_train, X_test, y_train, y_test = generate_dataset(dataset_type, sample_size)
@@ -149,6 +154,7 @@ def run_regression(model_type="linear", dataset_type="linear", sample_size=300, 
 
     return r2_score, y_pred, plot_base64, n_iterations, execution_time
 
+# File upload and analysis
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
@@ -183,26 +189,37 @@ def analyze_file(file_path):
         "dataset_preview": df.head().to_dict()  # First 5 rows of the dataset
     }
     
-    # Generate heatmap
+    # Generate heatmap (only for numeric data)
     visualization_paths = generate_heatmap(df)
     
     # Find the best algorithm, its accuracy, and best features
     best_algorithm, accuracy, best_features = find_best_algorithm(df)
     
-    return {"info": info, "visualization_paths": visualization_paths, "best_algorithm": best_algorithm, "accuracy": accuracy, "best_features": best_features}
+    return {
+        "info": info,
+        "visualization_paths": visualization_paths,
+        "best_algorithm": best_algorithm,
+        "accuracy": accuracy,
+        "best_features": best_features
+    }
 
 def generate_heatmap(df):
     visualization_paths = {}
     
-    # Heatmap for correlation matrix
-    if df.select_dtypes(include=['number']).shape[1] > 1:
+    # Select only numeric columns for the heatmap
+    numeric_df = df.select_dtypes(include=['number'])
+    
+    # Check if there are at least two numeric columns to compute correlation
+    if numeric_df.shape[1] > 1:
         plt.figure(figsize=(10, 8))
-        sns.heatmap(df.corr(), annot=True, cmap='coolwarm')
+        sns.heatmap(numeric_df.corr(), annot=True, cmap='coolwarm')
         plt.title("Correlation Heatmap")
         heatmap_path = os.path.join(UPLOAD_FOLDER, "heatmap.png")
         plt.savefig(heatmap_path)
         plt.close()
         visualization_paths["heatmap"] = "uploads/heatmap.png"
+    else:
+        visualization_paths["heatmap"] = "Not enough numeric columns to generate a heatmap."
     
     return visualization_paths
 
@@ -211,8 +228,13 @@ def find_best_algorithm(df):
     X = df.iloc[:, :-1]
     y = df.iloc[:, -1]
     
-    # Convert categorical columns to numerical
+    # Encode categorical columns in X
     X = pd.get_dummies(X)
+    
+    # Encode the target variable if it's categorical
+    if y.dtype == object:
+        le = LabelEncoder()
+        y = le.fit_transform(y)
     
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -256,7 +278,7 @@ def find_best_algorithm(df):
     
     return best_algorithm, best_accuracy, best_features
 
-
+# Classification endpoint
 @app.route('/classification', methods=['POST', 'OPTIONS'])
 def classification():
     if request.method == 'OPTIONS':
@@ -278,6 +300,7 @@ def classification():
         return jsonify({**metrics, 'plot_filename': plot_filename})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
 
 @app.route('/regression', methods=['POST', 'OPTIONS'])
 def regression():
@@ -305,9 +328,11 @@ def regression():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+# Serve static plots
 @app.route('/static/plots/<filename>')
 def serve_plot(filename):
     return send_from_directory(PLOT_DIR, filename)
 
+# Run the app
 if __name__ == '__main__':
     app.run(debug=True)

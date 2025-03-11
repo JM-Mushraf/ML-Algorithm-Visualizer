@@ -5,16 +5,18 @@
 }
 
 .classification-section-title {
-  font-size: 1.75rem;
+  font-size: 2rem; /* Updated */
   font-weight: 700;
   margin-bottom: 1.5rem;
   text-align: center;
   animation: fadeIn 1s ease-in-out;
 }
-select option{
+
+select option {
   color: black;
   background-color: none;
 }
+
 .gradient-text {
   background: linear-gradient(to right, #06b6d4, #9333ea);
   -webkit-background-clip: text;
@@ -100,7 +102,7 @@ select option{
 }
 
 .classification-form-label {
-  font-size: 0.875rem;
+  font-size: 1rem; /* Updated */
   color: #94a3b8;
 }
 
@@ -111,7 +113,7 @@ select option{
   border-radius: 0.5rem;
   padding: 0.5rem;
   color: #ffffff;
-  font-size: 0.875rem;
+  font-size: 1rem; /* Updated */
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -129,7 +131,7 @@ select option{
 .classification-range-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
+  font-size: 0.875rem; /* Updated */
   color: #94a3b8;
 }
 
@@ -139,7 +141,7 @@ select option{
   border-radius: 0.5rem;
   padding: 0.75rem;
   color: #ffffff;
-  font-size: 0.875rem;
+  font-size: 1rem; /* Updated */
   cursor: pointer;
   transition: opacity 0.3s ease, transform 0.3s ease;
   width: 100%;
@@ -189,12 +191,12 @@ select option{
 }
 
 .classification-metric-label {
-  font-size: 0.875rem;
+  font-size: 1rem; /* Updated */
   color: #94a3b8;
 }
 
 .classification-metric-value {
-  font-size: 1rem;
+  font-size: 1.25rem; /* Updated */
   font-weight: 600;
   color: #ffffff;
 }
@@ -238,12 +240,12 @@ select option{
 }
 
 .classification-cell-value {
-  font-size: 1.25rem;
+  font-size: 1.5rem; /* Updated */
   font-weight: 700;
 }
 
 .classification-cell-label {
-  font-size: 0.75rem;
+  font-size: 0.875rem; /* Updated */
   color: #94a3b8;
 }
 
