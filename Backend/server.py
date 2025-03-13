@@ -27,7 +27,7 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from gensim.models import Word2Vec
-
+from chatbot_dataset import data
 # Set up upload and plot directories
 UPLOAD_FOLDER = "uploads"
 PLOT_DIR = "static/plots"
@@ -39,36 +39,11 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # Download NLTK resources
-nltk.download('punkt')
-nltk.download('stopwords')
+# nltk.download('punkt')
+# nltk.download('stopwords')
 
 # Step 1: Create Dataset for Chatbot
-data = {
-    "question": [
-        "What is regression?",
-        "What is a decision tree?",
-        "What is max_depth in decision trees?",
-        "What is overfitting?",
-        "What is a neural network?",
-        "What is clustering?",
-        "What is the difference between classification and regression?",
-        "What is gradient descent?",
-        "What is a loss function?",
-        "What is regularization?"
-    ],
-    "answer": [
-        "Regression is a statistical method used to predict a continuous outcome variable based on one or more predictor variables.",
-        "A decision tree is a flowchart-like structure where each internal node represents a decision based on a feature, each branch represents the outcome of the decision, and each leaf node represents a class label or a continuous value.",
-        "max_depth is a hyperparameter in decision trees that controls the maximum depth of the tree. A deeper tree can model more complex patterns but may lead to overfitting.",
-        "Overfitting occurs when a model learns the training data too well, capturing noise and details, which negatively impacts its performance on unseen data.",
-        "A neural network is a series of algorithms that attempts to recognize underlying relationships in a set of data through a process that mimics the way the human brain operates.",
-        "Clustering is the task of grouping a set of objects in such a way that objects in the same group are more similar to each other than to those in other groups.",
-        "Classification is used to predict discrete labels, while regression is used to predict continuous values.",
-        "Gradient descent is an optimization algorithm used to minimize a function by iteratively moving in the direction of the steepest descent.",
-        "A loss function measures how well a model's predictions match the actual target values.",
-        "Regularization is a technique used to prevent overfitting by adding a penalty to the loss function based on the complexity of the model."
-    ]
-}
+
 
 df = pd.DataFrame(data)
 
@@ -103,11 +78,29 @@ def get_sentence_vector(sentence, model):
 # Create Word2Vec vectors for all questions
 df['word2vec_vector'] = df['processed_question'].apply(lambda x: get_sentence_vector(x, word2vec_model))
 
+# Function to handle greetings
+def handle_greeting(text):
+    greetings = ["hi", "hello", "hey", "greetings", "howdy"]
+    if text.lower() in greetings:
+        return "Hello! How can I assist you today?"
+    return None
+
+# Function to handle out-of-topic inputs
+def handle_out_of_topic(similarity_score, threshold=0.3):
+    if similarity_score < threshold:
+        return "I'm sorry, I didn't understand that. Could you please rephrase or ask a different question?"
+    return None
+
 # Chatbot function
 def chatbot(user_input, method='word2vec'):
+    # Handle greetings
+    greeting_response = handle_greeting(user_input)
+    if greeting_response:
+        return greeting_response
+
     # Preprocess user input
     processed_input = preprocess_text(user_input)
-    
+
     if method == 'bow':
         # Convert user input to BoW
         input_bow = vectorizer.transform([' '.join(processed_input)])
@@ -115,6 +108,7 @@ def chatbot(user_input, method='word2vec'):
         similarities = cosine_similarity(input_bow, bow_matrix)
         # Get the index of the most similar question
         best_match_idx = similarities.argmax()
+        best_match_score = similarities.max()
     elif method == 'word2vec':
         # Convert user input to Word2Vec vector
         input_vector = get_sentence_vector(processed_input, word2vec_model)
@@ -122,12 +116,17 @@ def chatbot(user_input, method='word2vec'):
         similarities = [cosine_similarity([input_vector], [q_vec])[0][0] for q_vec in df['word2vec_vector']]
         # Get the index of the most similar question
         best_match_idx = np.argmax(similarities)
+        best_match_score = similarities[best_match_idx]
     else:
         return "Invalid method. Choose 'bow' or 'word2vec'."
 
+    # Handle out-of-topic inputs
+    out_of_topic_response = handle_out_of_topic(best_match_score)
+    if out_of_topic_response:
+        return out_of_topic_response
+
     # Return the best-matching answer
     return df.loc[best_match_idx, 'answer']
-
 # Chatbot endpoint
 @app.route('/chatbot', methods=['POST'])
 def chatbot_endpoint():
