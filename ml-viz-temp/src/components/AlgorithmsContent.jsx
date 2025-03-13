@@ -43,7 +43,7 @@ function AlgorithmsContent() {
           </p>
           <div className="algorithm-footer">
             <span className="difficulty-label">Difficulty: Intermediate</span>
-            <button className="learn-more-button blue">Learn more →</button>
+            <a className="learn-more-button blue" href="https://www.geeksforgeeks.org/understanding-logistic-regression/" target="_blank">Learn more →</a>
           </div>
         </div>
 
@@ -57,7 +57,7 @@ function AlgorithmsContent() {
           </p>
           <div className="algorithm-footer">
             <span className="difficulty-label">Difficulty: Advanced</span>
-            <button className="learn-more-button purple">Learn more →</button>
+            <a className="learn-more-button purple" href="https://www.geeksforgeeks.org/neural-networks-a-beginners-guide/" target="_blank">Learn more →</a>
           </div>
         </div>
 
@@ -71,7 +71,7 @@ function AlgorithmsContent() {
           </p>
           <div className="algorithm-footer">
             <span className="difficulty-label">Difficulty: Intermediate</span>
-            <button className="learn-more-button cyan">Learn more →</button>
+            <a className="learn-more-button cyan" href="https://www.geeksforgeeks.org/k-means-clustering-introduction/" target="_blank">Learn more →</a>
           </div>
         </div>
 
@@ -85,7 +85,7 @@ function AlgorithmsContent() {
           </p>
           <div className="algorithm-footer">
             <span className="difficulty-label">Difficulty: Advanced</span>
-            <button className="learn-more-button pink">Learn more →</button>
+            <a className="learn-more-button pink" href="https://www.geeksforgeeks.org/support-vector-machine-algorithm/" target="_blank">Learn more →</a>
           </div>
         </div>
 
@@ -99,7 +99,7 @@ function AlgorithmsContent() {
           </p>
           <div className="algorithm-footer">
             <span className="difficulty-label">Difficulty: Intermediate</span>
-            <button className="learn-more-button orange">Learn more →</button>
+            <a className="learn-more-button orange" href="https://www.geeksforgeeks.org/decision-tree/" >Learn more →</a>
           </div>
         </div>
       </div>
