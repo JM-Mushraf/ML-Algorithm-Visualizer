@@ -30,7 +30,8 @@ from gensim.models import Word2Vec
 from chatbot_dataset import data
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-nltk.download('punkt')
+import logging
+
 # Set up upload and plot directories
 UPLOAD_FOLDER = "uploads"
 PLOT_DIR = "static/plots"
@@ -41,13 +42,21 @@ os.makedirs(PLOT_DIR, exist_ok=True)
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Download NLTK resources
-# nltk.download('punkt')
-# nltk.download('stopwords')
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
 
 # Step 1: Create Dataset for Chatbot
-
-
 df = pd.DataFrame(data)
 
 # Preprocessing function for chatbot
@@ -68,7 +77,11 @@ bow_matrix = vectorizer.fit_transform(df['processed_question_str'])
 
 # Word2Vec for chatbot
 sentences = df['processed_question'].tolist()
-word2vec_model = Word2Vec(sentences, vector_size=100, window=5, min_count=1, workers=4)
+if os.path.exists('word2vec.model'):
+    word2vec_model = Word2Vec.load('word2vec.model')
+else:
+    word2vec_model = Word2Vec(sentences, vector_size=100, window=5, min_count=1, workers=4)
+    word2vec_model.save('word2vec.model')
 
 # Function to get average Word2Vec vector for a sentence
 def get_sentence_vector(sentence, model):
@@ -130,6 +143,7 @@ def chatbot(user_input, method='word2vec'):
 
     # Return the best-matching answer
     return df.loc[best_match_idx, 'answer']
+
 # Chatbot endpoint
 @app.route('/chatbot', methods=['POST'])
 def chatbot_endpoint():
@@ -139,7 +153,6 @@ def chatbot_endpoint():
         return jsonify({"error": "No message provided"}), 400
     response = chatbot(user_input, method='bow')  # Use 'bow' or 'word2vec'
     return jsonify({"response": response})
-
 
 # Helper function to plot decision boundaries for classification models
 def plot_decision_boundary(X, y, model, model_type, plot_path):
@@ -311,6 +324,10 @@ def upload_file():
     if file.filename == "":
         return jsonify({"error": "No selected file"}), 400
 
+    # Validate file name
+    if not re.match(r'^[\w\-\.]+$', file.filename):
+        return jsonify({"error": "Invalid filename"}), 400
+
     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(file_path)
     
@@ -321,8 +338,15 @@ def upload_file():
 
 def analyze_file(file_path):
     # Load the file into a pandas DataFrame
-    df = pd.read_csv(file_path)  # Assuming the file is a CSV, adjust accordingly for other formats
-    
+    if file_path.endswith('.csv'):
+        df = pd.read_csv(file_path)
+    elif file_path.endswith('.xlsx'):
+        df = pd.read_excel(file_path)
+    elif file_path.endswith('.json'):
+        df = pd.read_json(file_path)
+    else:
+        return {"error": "Unsupported file format. Please upload a CSV, Excel, or JSON file."}
+
     # Basic information about the data
     info = {
         "num_rows": df.shape[0],
@@ -353,16 +377,16 @@ def generate_heatmap(df):
     numeric_df = df.select_dtypes(include=['number'])
     
     # Check if there are at least two numeric columns to compute correlation
-    if numeric_df.shape[1] > 1:
-        plt.figure(figsize=(10, 8))
-        sns.heatmap(numeric_df.corr(), annot=True, cmap='coolwarm')
-        plt.title("Correlation Heatmap")
-        heatmap_path = os.path.join(UPLOAD_FOLDER, "heatmap.png")
-        plt.savefig(heatmap_path)
-        plt.close()
-        visualization_paths["heatmap"] = "uploads/heatmap.png"
-    else:
-        visualization_paths["heatmap"] = "Not enough numeric columns to generate a heatmap."
+    if numeric_df.shape[1] < 2:
+        return {"heatmap": "Not enough numeric columns to generate a heatmap."}
+    
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(numeric_df.corr(), annot=True, cmap='coolwarm')
+    plt.title("Correlation Heatmap")
+    heatmap_path = os.path.join(UPLOAD_FOLDER, "heatmap.png")
+    plt.savefig(heatmap_path)
+    plt.close()
+    visualization_paths["heatmap"] = "uploads/heatmap.png"
     
     return visualization_paths
 
@@ -442,9 +466,10 @@ def classification():
         )
         return jsonify({**metrics, 'plot_filename': plot_filename})
     except Exception as e:
+        logger.error(f'Error in classification: {str(e)}')
         return jsonify({'error': str(e)}), 400
 
-
+# Regression endpoint
 @app.route('/regression', methods=['POST', 'OPTIONS'])
 def regression():
     if request.method == 'OPTIONS':
@@ -469,6 +494,7 @@ def regression():
             'execution_time': round(execution_time, 4)
         })
     except Exception as e:
+        logger.error(f'Error in regression: {str(e)}')
         return jsonify({'error': str(e)}), 400
 
 # Serve static plots
