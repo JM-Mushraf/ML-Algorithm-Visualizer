@@ -2,11 +2,14 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
+import {useNavigate} from 'react-router-dom'
 import "./HomeContent.css";
+
 
 function HomeContent() {
   // Bar chart heights for the histogram animation
   const barHeights = [30, 60, 90, 40, 80, 50, 70];
+  const navigate=useNavigate();
 
   // Decision tree data
   const decisionTreeData = [
@@ -112,7 +115,9 @@ function HomeContent() {
           }}
         >
           {decisionTreeData.map((node) => {
-            const parentNode = decisionTreeData.find((n) => n.id === node.parent);
+            const parentNode = decisionTreeData.find(
+              (n) => n.id === node.parent
+            );
             return (
               <>
                 {parentNode && (
@@ -120,13 +125,19 @@ function HomeContent() {
                     key={`line-${node.id}`}
                     style={{
                       position: "absolute",
-                      width: `${Math.sqrt((node.x - parentNode.x) ** 2 + (node.y - parentNode.y) ** 2)}px`,
+                      width: `${Math.sqrt(
+                        (node.x - parentNode.x) ** 2 +
+                          (node.y - parentNode.y) ** 2
+                      )}px`,
                       height: "2px",
                       backgroundColor: "#6b5b95",
                       top: `${parentNode.y}px`,
                       left: `${parentNode.x}px`,
                       transformOrigin: "0% 0%",
-                      transform: `rotate(${Math.atan2(node.y - parentNode.y, node.x - parentNode.x)}rad)`,
+                      transform: `rotate(${Math.atan2(
+                        node.y - parentNode.y,
+                        node.x - parentNode.x
+                      )}rad)`,
                     }}
                     animate={{ opacity: [0.5, 1, 0.5] }}
                     transition={{
@@ -198,13 +209,18 @@ function HomeContent() {
               key={i}
               style={{
                 position: "absolute",
-                width: `${Math.sqrt((conn.x2 - conn.x1) ** 2 + (conn.y2 - conn.y1) ** 2)}px`,
+                width: `${Math.sqrt(
+                  (conn.x2 - conn.x1) ** 2 + (conn.y2 - conn.y1) ** 2
+                )}px`,
                 height: "2px",
                 backgroundColor: "#6b5b95",
                 top: `${conn.y1}px`,
                 left: `${conn.x1}px`,
                 transformOrigin: "0% 0%",
-                transform: `rotate(${Math.atan2(conn.y2 - conn.y1, conn.x2 - conn.x1)}rad)`,
+                transform: `rotate(${Math.atan2(
+                  conn.y2 - conn.y1,
+                  conn.x2 - conn.x1
+                )}rad)`,
               }}
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{
@@ -225,18 +241,22 @@ function HomeContent() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, duration: 0.7 }}
       >
-        {["Regression", "Classification", "Clustering", "Neural Networks"].map(
-          (item, index) => (
-            <motion.div
-              key={item}
-              className="algorithm-tag"
-              whileHover={{ scale: 1.1, backgroundColor: "#6b5b95" }}
-              transition={{ duration: 0.3 }}
-            >
-              {item}
-            </motion.div>
-          )
-        )}
+        <motion.div
+          className="algorithm-tag"
+          whileHover={{ scale: 1.1, backgroundColor: "#6b5b95" }}
+          transition={{ duration: 0.3 }}
+          onClick={() => navigate('/regression')}
+        >
+          Regression
+        </motion.div>
+        <motion.div
+          className="algorithm-tag"
+          whileHover={{ scale: 1.1, backgroundColor: "#6b5b95" }}
+          transition={{ duration: 0.3 }}
+          onClick={() => navigate('/classification')}
+        >
+          Classification
+        </motion.div>
       </motion.div>
     </motion.div>
   );
