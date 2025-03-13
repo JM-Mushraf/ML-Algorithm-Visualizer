@@ -3,7 +3,7 @@ import { motion } from "framer-motion"
 import { BarChart3 } from "lucide-react"
 import { useState } from "react"
 import "./ClassificationContent.css"
-
+import toast from "react-hot-toast"
 function ClassificationContent() {
   const [metrics, setMetrics] = useState({
     accuracy: 0,
@@ -74,12 +74,12 @@ function ClassificationContent() {
           }
         }),
       });
-
+      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.error}`);
       }
-
+      toast.success("Graph Generated")
       const data = await response.json();
       setMetrics({
         accuracy: data.accuracy,

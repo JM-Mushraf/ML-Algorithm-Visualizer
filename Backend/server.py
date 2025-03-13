@@ -28,6 +28,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from gensim.models import Word2Vec
 from chatbot_dataset import data
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 # Set up upload and plot directories
 UPLOAD_FOLDER = "uploads"
 PLOT_DIR = "static/plots"
@@ -160,17 +162,50 @@ def plot_decision_boundary(X, y, model, model_type, plot_path):
 def run_classification(model_type="logistic", dataset_type="linear", sample_size=200, noise=0.1, **hyperparams):
     """Run classification model and return metrics and plot filename."""
     X, y = create_classification_dataset(dataset_type=dataset_type, n_samples=sample_size, noise=noise)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=hyperparams.get("test_split", 0.3), random_state=42)
 
     models = {
-        "logistic": LogisticRegression(C=hyperparams.get("C", 1.0), max_iter=hyperparams.get("max_iter", 100)),
-        "dt": DecisionTreeClassifier(max_depth=hyperparams.get("max_depth", 5)),
-        "rf": RandomForestClassifier(n_estimators=hyperparams.get("n_estimators", 100), random_state=42),
-        "svm": SVC(kernel=hyperparams.get("kernel", "linear"), C=hyperparams.get("C", 1.0))
+        "logistic": LogisticRegression(
+            C=hyperparams.get("C", 1.0),
+            solver=hyperparams.get("solver", "lbfgs"),
+            penalty=hyperparams.get("penalty", "l2"),
+            max_iter=hyperparams.get("max_iter", 100)
+        ),
+        "dt": DecisionTreeClassifier(
+            max_depth=hyperparams.get("max_depth", 5),
+            min_samples_split=hyperparams.get("min_samples_split", 2),
+            min_samples_leaf=hyperparams.get("min_samples_leaf", 1),
+            criterion=hyperparams.get("criterion", "gini")
+        ),
+        "rf": RandomForestClassifier(
+            n_estimators=hyperparams.get("n_estimators", 100),
+            max_depth=hyperparams.get("max_depth", 5),
+            min_samples_split=hyperparams.get("min_samples_split", 2),
+            min_samples_leaf=hyperparams.get("min_samples_leaf", 1),
+            criterion=hyperparams.get("criterion", "gini"),
+            max_features=hyperparams.get("max_features", "sqrt"),
+            random_state=42
+        ),
+        "svm": SVC(
+            kernel=hyperparams.get("kernel", "linear"),
+            C=hyperparams.get("C", 1.0),
+            gamma=hyperparams.get("gamma", "scale"),
+            degree=hyperparams.get("degree", 3)
+        ),
+        "nb": GaussianNB(
+            var_smoothing=hyperparams.get("var_smoothing", 1e-9)
+        ),
+        "knn": KNeighborsClassifier(
+            n_neighbors=hyperparams.get("n_neighbors", 5),
+            weights=hyperparams.get("weights", "uniform"),
+            algorithm=hyperparams.get("algorithm", "auto"),
+            leaf_size=hyperparams.get("leaf_size", 30),
+            p=hyperparams.get("p", 2)
+        )
     }
 
     if model_type not in models:
-        raise ValueError("Invalid model type. Choose 'logistic', 'dt', 'rf', or 'svm'.")
+        raise ValueError("Invalid model type. Choose 'logistic', 'dt', 'rf', 'svm', 'nb', or 'knn'.")
 
     model = models[model_type]
     model.fit(X_train, y_train)
