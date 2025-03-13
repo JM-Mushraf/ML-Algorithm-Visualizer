@@ -30,6 +30,7 @@ from gensim.models import Word2Vec
 from chatbot_dataset import data
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
+nltk.download('punkt')
 # Set up upload and plot directories
 UPLOAD_FOLDER = "uploads"
 PLOT_DIR = "static/plots"
