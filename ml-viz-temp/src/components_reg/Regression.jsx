@@ -21,9 +21,10 @@ import {
   ChevronRight,
   Sparkles,
 } from "./Icons";
+import toast from "react-hot-toast";
 
 function Regression() {
-  const [algorithm, setAlgorithm] = useState("kmeans");
+  const [algorithm, setAlgorithm] = useState("linear");
   const [dataset, setDataset] = useState("linear");
   const [sampleSize, setSampleSize] = useState(100);
   const [isRunning, setIsRunning] = useState(false);
@@ -85,7 +86,8 @@ function Regression() {
       });
 
       // Handle the response (e.g., update the visualization, display results, etc.)
-      console.log(response.data);
+      
+      toast.success("Graph generated!")
 
       // Update visualization data
       setVisualizationData({
@@ -198,10 +200,7 @@ function Regression() {
                     </div>
                   </div>
 
-                  <Button variant="outline" className="custom-dataset-btn">
-                    <GitBranch className="btn-icon" />
-                    Create Custom Dataset
-                  </Button>
+                  
                 </div>
               </CardContent>
             </Card>
@@ -458,35 +457,7 @@ function Regression() {
             </Card>
 
             {/* Chat Bot */}
-            <Card className="card">
-              <CardContent className="card-content">
-                <h2 className="section-title">
-                  <MessageSquare className="section-icon" />
-                  ML Assistant
-                </h2>
-                <div className="chat-container">
-                  {chatHistory.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`chat-message ${message.startsWith("You:") ? "user-message" : "bot-message"}`}
-                    >
-                      {message}
-                    </div>
-                  ))}
-                </div>
-                <form onSubmit={sendMessage} className="chat-form">
-                  <Input
-                    value={chatMessage}
-                    onChange={(e) => setChatMessage(e.target.value)}
-                    placeholder="Ask about algorithms..."
-                    className="chat-input"
-                  />
-                  <Button type="submit" size="icon" variant="outline" className="chat-submit">
-                    <ChevronRight className="submit-icon" />
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+            
           </div>
 
           {/* Main Content */}

@@ -168,7 +168,9 @@ function UploadContent() {
 
               <div className="upload-content-info-section">
                 <h4 className="upload-content-section-title">Dataset Preview</h4>
-                <pre className="upload-content-dataset-preview">{JSON.stringify(analysisResults.info.dataset_preview, null, 2)}</pre>
+                <pre className="upload-content-dataset-preview">
+                  {JSON.stringify(analysisResults.info.dataset_preview, null, 2)}
+                </pre>
               </div>
             </div>
 
@@ -188,13 +190,21 @@ function UploadContent() {
               <div className="upload-content-info-section">
                 <h4 className="upload-content-section-title">Best Features</h4>
                 <div className="upload-content-features-info">
-                  <p>{analysisResults.best_features || "Feature importance not available for this model."}</p>
+                  {analysisResults.best_features ? (
+                    Object.entries(analysisResults.best_features).map(([key, value]) => (
+                      <div key={key}>
+                        <strong>{key}:</strong> {value}
+                      </div>
+                    ))
+                  ) : (
+                    <p>Feature importance not available for this model.</p>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Visualizations */}
+          {/* Visualization */}
           <div className="upload-content-visualization-card glass-panel">
             <h3 className="upload-content-card-title">Heatmap</h3>
             <div className="upload-content-visualization-container">
