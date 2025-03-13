@@ -40,7 +40,7 @@ function ClassificationContent() {
 
   const handleRunModel = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/classification", {
+      const response = await fetch("https://algovizserver.onrender.com/classification", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -87,7 +87,7 @@ function ClassificationContent() {
         recall: data.recall,
         f1: data.f1,
         confusionMatrix: data.confusion_matrix,
-        plotUrl: `http://127.0.0.1:5000/static/plots/${data.plot_filename}`,
+        plotUrl: `https://algovizserver.onrender.com/static/plots/${data.plot_filename}`,
       });
     } catch (error) {
       console.error("Error fetching data:", error);

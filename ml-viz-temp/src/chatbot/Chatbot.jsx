@@ -30,7 +30,7 @@ const Chatbot = () => {
 
       try {
         // Send the user message to the backend
-        const response = await fetch("http://localhost:5000/chatbot", {
+        const response = await fetch("https://algovizserver.onrender.com/chatbot", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

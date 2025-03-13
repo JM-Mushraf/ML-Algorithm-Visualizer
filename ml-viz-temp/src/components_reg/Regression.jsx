@@ -78,7 +78,7 @@ function Regression() {
     try {
       console.log(algorithm, dataset, hyperparameters);
 
-      const response = await axios.post("http://127.0.0.1:5000/regression", {
+      const response = await axios.post("https://algovizserver.onrender.com/regression", {
         model_type: algorithm,
         dataset_type: dataset,
         sample_size: sampleSize,

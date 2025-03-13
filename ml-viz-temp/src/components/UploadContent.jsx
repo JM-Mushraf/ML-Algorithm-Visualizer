@@ -26,7 +26,7 @@ function UploadContent() {
     formData.append("file", file)
 
     try {
-      const response = await axios.post("http://localhost:5000/upload", formData, {
+      const response = await axios.post("https://algovizserver.onrender.com/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
 
@@ -209,7 +209,7 @@ function UploadContent() {
             <h3 className="upload-content-card-title">Heatmap</h3>
             <div className="upload-content-visualization-container">
               <img
-                src={`http://localhost:5000/uploads/${analysisResults.visualization_paths.heatmap.split("/").pop()}`}
+                src={`https://algovizserver.onrender.com/uploads/${analysisResults.visualization_paths.heatmap.split("/").pop()}`}
                 alt="Heatmap"
                 className="upload-content-visualization-image"
               />
