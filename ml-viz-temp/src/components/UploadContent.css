@@ -355,7 +355,14 @@
   border-radius: 0.75rem;
   color: #ffffff;
 }
-
+.upload-content-features-info{
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  max-height: 460px;
+  overflow-y: auto;
+  color: #ffffff;
+}
 /* Visualization */
 .upload-content-visualization-container {
   display: flex;
