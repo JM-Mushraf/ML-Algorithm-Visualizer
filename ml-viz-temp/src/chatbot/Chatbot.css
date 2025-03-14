@@ -297,3 +297,42 @@ body::after {
   z-index: -1;
   pointer-events: none;
 }
+
+
+.chatbot-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(to right, #9333ea, #0891b2);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  font-size: 20px;
+  transition: all 0.3s ease;
+  z-index: 1000; /* Ensures it stays on top but not over dropdowns */
+  pointer-events: auto; /* Ensures it's clickable */
+}
+.chatbot-container {
+  pointer-events: none; /* Prevents blocking interactions */
+}
+
+.chatbot-toggle {
+  pointer-events: auto; /* Ensures button stays clickable */
+}
+@media (max-width: 480px) {
+  .chatbot-input {
+    margin-bottom: 20px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .message {
+    max-width: 85%;
+  }
+}

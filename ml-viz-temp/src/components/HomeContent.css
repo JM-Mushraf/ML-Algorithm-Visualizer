@@ -105,3 +105,11 @@
   margin: 0 auto;
   
 }
+
+
+@media (max-width: 480px) {
+  .visualization-container{
+    display: flex;
+    flex-direction: column;
+  }
+}

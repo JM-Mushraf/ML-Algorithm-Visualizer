@@ -1,17 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useRef } from "react";
-import {useNavigate} from 'react-router-dom'
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import "./HomeContent.css";
 
-
 function HomeContent() {
-  // Bar chart heights for the histogram animation
+  const [isMobile, setIsMobile] = useState(false);
   const barHeights = [30, 60, 90, 40, 80, 50, 70];
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
-  // Decision tree data
   const decisionTreeData = [
     { id: 1, x: 150, y: 50, parent: null },
     { id: 2, x: 50, y: 150, parent: 1 },
@@ -22,13 +20,22 @@ function HomeContent() {
     { id: 7, x: 300, y: 250, parent: 3 },
   ];
 
-  // Neural network-like connections (lines between nodes)
   const neuralConnections = [
     { x1: 50, y1: 50, x2: 150, y2: 100 },
     { x1: 150, y1: 100, x2: 250, y2: 50 },
     { x1: 50, y1: 150, x2: 150, y2: 100 },
     { x1: 150, y1: 100, x2: 250, y2: 150 },
   ];
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 480);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <motion.div
@@ -55,12 +62,11 @@ function HomeContent() {
         Explore machine learning algorithms through interactive visualizations
       </motion.p>
 
-      {/* Visualization Container */}
       <motion.div
         className="visualization-container"
         style={{
           display: "flex",
-          flexDirection: "row",
+          flexDirection: isMobile ? "column" : "row",
           justifyContent: "space-between",
           alignItems: "center",
           gap: "20px",
@@ -69,118 +75,118 @@ function HomeContent() {
           margin: "0 auto",
         }}
       >
-        {/* Bar Chart */}
-        <motion.div
-          className="bar-chart"
-          style={{
-            display: "flex",
-            gap: "10px",
-            alignItems: "flex-end",
-            height: "200px",
-            width: "30%",
-          }}
-        >
-          {barHeights.map((height, index) => (
-            <motion.div
-              key={index}
-              style={{
-                width: "30px",
-                backgroundColor: "#6b5b95",
-                borderRadius: "5px",
-              }}
-              animate={{
-                height: [`${height}px`, `${height + 20}px`, `${height}px`],
-              }}
-              transition={{
-                repeat: Infinity,
-                repeatType: "reverse",
-                duration: 1.5,
-                ease: "easeInOut",
-                delay: index * 0.1,
-              }}
-            />
-          ))}
-        </motion.div>
+        {!isMobile && (
+          <motion.div
+            className="bar-chart"
+            style={{
+              display: "flex",
+              gap: "10px",
+              alignItems: "flex-end",
+              height: "200px",
+              width: "30%",
+            }}
+          >
+            {barHeights.map((height, index) => (
+              <motion.div
+                key={index}
+                style={{
+                  width: "30px",
+                  backgroundColor: "#6b5b95",
+                  borderRadius: "5px",
+                }}
+                animate={{
+                  height: [`${height}px`, `${height + 20}px`, `${height}px`],
+                }}
+                transition={{
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  duration: 1.5,
+                  ease: "easeInOut",
+                  delay: index * 0.1,
+                }}
+              />
+            ))}
+          </motion.div>
+        )}
 
-        {/* Decision Tree */}
-        <motion.div
-          className="decision-tree"
-          style={{
-            position: "relative",
-            width: "30%",
-            height: "300px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {decisionTreeData.map((node) => {
-            const parentNode = decisionTreeData.find(
-              (n) => n.id === node.parent
-            );
-            return (
-              <>
-                {parentNode && (
+        {!isMobile && (
+          <motion.div
+            className="decision-tree"
+            style={{
+              position: "relative",
+              width: "30%",
+              height: "300px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {decisionTreeData.map((node) => {
+              const parentNode = decisionTreeData.find(
+                (n) => n.id === node.parent
+              );
+              return (
+                <>
+                  {parentNode && (
+                    <motion.div
+                      key={`line-${node.id}`}
+                      style={{
+                        position: "absolute",
+                        width: `${Math.sqrt(
+                          (node.x - parentNode.x) ** 2 +
+                            (node.y - parentNode.y) ** 2
+                        )}px`,
+                        height: "2px",
+                        backgroundColor: "#6b5b95",
+                        top: `${parentNode.y}px`,
+                        left: `${parentNode.x}px`,
+                        transformOrigin: "0% 0%",
+                        transform: `rotate(${Math.atan2(
+                          node.y - parentNode.y,
+                          node.x - parentNode.x
+                        )}rad)`,
+                      }}
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 1.5,
+                        ease: "easeInOut",
+                      }}
+                    />
+                  )}
                   <motion.div
-                    key={`line-${node.id}`}
+                    key={`node-${node.id}`}
                     style={{
                       position: "absolute",
-                      width: `${Math.sqrt(
-                        (node.x - parentNode.x) ** 2 +
-                          (node.y - parentNode.y) ** 2
-                      )}px`,
-                      height: "2px",
-                      backgroundColor: "#6b5b95",
-                      top: `${parentNode.y}px`,
-                      left: `${parentNode.x}px`,
-                      transformOrigin: "0% 0%",
-                      transform: `rotate(${Math.atan2(
-                        node.y - parentNode.y,
-                        node.x - parentNode.x
-                      )}rad)`,
+                      width: "20px",
+                      height: "20px",
+                      backgroundColor: "#ff6f61",
+                      borderRadius: "50%",
+                      top: `${node.y}px`,
+                      left: `${node.x}px`,
                     }}
-                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    animate={{ scale: [1, 1.2, 1] }}
                     transition={{
                       repeat: Infinity,
                       duration: 1.5,
                       ease: "easeInOut",
+                      delay: node.id * 0.2,
                     }}
                   />
-                )}
-                <motion.div
-                  key={`node-${node.id}`}
-                  style={{
-                    position: "absolute",
-                    width: "20px",
-                    height: "20px",
-                    backgroundColor: "#ff6f61",
-                    borderRadius: "50%",
-                    top: `${node.y}px`,
-                    left: `${node.x}px`,
-                  }}
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 1.5,
-                    ease: "easeInOut",
-                    delay: node.id * 0.2,
-                  }}
-                />
-              </>
-            );
-          })}
-        </motion.div>
+                </>
+              );
+            })}
+          </motion.div>
+        )}
 
-        {/* Neural Network */}
         <motion.div
           className="neural-network"
           style={{
             position: "relative",
-            width: "30%",
+            width: isMobile ? "100%" : "30%",
             height: "200px",
           }}
         >
-          {/* Nodes */}
           {[50, 150, 250].map((x, i) => (
             <motion.div
               key={i}
@@ -203,7 +209,6 @@ function HomeContent() {
             />
           ))}
 
-          {/* Connections */}
           {neuralConnections.map((conn, i) => (
             <motion.div
               key={i}
@@ -234,7 +239,6 @@ function HomeContent() {
         </motion.div>
       </motion.div>
 
-      {/* Algorithm Tags */}
       <motion.div
         className="algorithm-tags"
         initial={{ opacity: 0, y: 20 }}
