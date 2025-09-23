@@ -2,7 +2,7 @@
 
 AlgoViz is an **interactive Machine Learning visualization tool** that helps you understand how different ML algorithms work by **visualizing datasets, decision boundaries, regression lines, and performance insights** in real-time.  
 
-Built with ❤️ by **Himanshu Sahu** & **Mushraf JM** 🛠️🚀  
+Built by **Mushraf JM** & **Himanshu Sahu** 🛠️🚀  
 
 ---
 
