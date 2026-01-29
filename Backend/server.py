@@ -511,6 +511,10 @@ def regression():
 def serve_plot(filename):
     return send_from_directory(PLOT_DIR, filename)
 
+@app.route('/ping', methods=['GET'])
+def ping():
+    return jsonify({"status": "awake", "message": "Server is up!"}), 200
+
 # Run the app
 if __name__ == '__main__':
     app.run(debug=True)
