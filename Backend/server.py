@@ -324,8 +324,15 @@ def run_regression(model_type="linear", dataset_type="linear", sample_size=300, 
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
-@app.route("/upload", methods=["POST"])
+@app.route("/upload", methods=["POST", "OPTIONS"])
 def upload_file():
+    if request.method == 'OPTIONS':
+        response = jsonify({'message': 'Preflight request received'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')  # Content-Type is critical for multipart
+        return response, 200
+
     if "file" not in request.files:
         return jsonify({"error": "No file part"}), 400
 
