@@ -45,7 +45,7 @@ CORS(app, resources={
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
         "expose_headers": ["Content-Type"],
-        "supports_credentials": True,
+        "supports_credentials": False,
         "max_age": 3600
     }
 })
