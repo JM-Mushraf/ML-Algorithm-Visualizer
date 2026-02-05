@@ -15,7 +15,6 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.svm import SVC
 from sklearn.preprocessing import PolynomialFeatures, LabelEncoder
-from flask import send_from_directory
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
@@ -40,7 +39,16 @@ os.makedirs(PLOT_DIR, exist_ok=True)
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app, resources={
+    r"/*": {
+        "origins": ["https://algoviz-ichv.onrender.com", "http://localhost:*"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "expose_headers": ["Content-Type"],
+        "supports_credentials": True,
+        "max_age": 3600
+    }
+})
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -324,34 +332,36 @@ def run_regression(model_type="linear", dataset_type="linear", sample_size=300, 
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
-@app.route("/upload", methods=["POST", "OPTIONS"])
+@app.route("/upload", methods=["POST"])
 def upload_file():
-    if request.method == 'OPTIONS':
-        response = jsonify({'message': 'Preflight request received'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')  # Content-Type is critical for multipart
-        return response, 200
+    try:
+        if "file" not in request.files:
+            return jsonify({"error": "No file part"}), 400
 
-    if "file" not in request.files:
-        return jsonify({"error": "No file part"}), 400
+        file = request.files["file"]
+        if file.filename == "":
+            return jsonify({"error": "No selected file"}), 400
 
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "No selected file"}), 400
+        if not re.match(r'^[\w\-\.]+$', file.filename):
+            return jsonify({"error": "Invalid filename"}), 400
 
-    # Validate file name
-    if not re.match(r'^[\w\-\.]+$', file.filename):
-        return jsonify({"error": "Invalid filename"}), 400
+        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(file_path)
+        
+        # Analyze with error catching
+        analysis_results = analyze_file(file_path)
+        
+        return jsonify({
+            "message": "File uploaded successfully",
+            "file_path": file_path,
+            "analysis": analysis_results
+        })
 
-    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(file_path)
+    except Exception as e:
+        logger.error(f"Upload/analysis failed: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Server error during analysis: {str(e)}"}), 500
     
-    # Analyze the file and generate visualizations
-    analysis_results = analyze_file(file_path)
     
-    return jsonify({"message": "File uploaded successfully", "file_path": file_path, "analysis": analysis_results})
-
 def analyze_file(file_path):
     # Load the file into a pandas DataFrame
     if file_path.endswith('.csv'):
@@ -462,15 +472,8 @@ def find_best_algorithm(df):
     return best_algorithm, best_accuracy, best_features
 
 # Classification endpoint
-@app.route('/classification', methods=['POST', 'OPTIONS'])
+@app.route('/classification', methods=['POST'])
 def classification():
-    if request.method == 'OPTIONS':
-        response = jsonify({'message': 'Preflight request received'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-        response.headers.add('Access-Control-Allow-Methods', 'POST')
-        return response
-
     data = request.json
     try:
         metrics, plot_filename = run_classification(
@@ -486,15 +489,8 @@ def classification():
         return jsonify({'error': str(e)}), 400
 
 # Regression endpoint
-@app.route('/regression', methods=['POST', 'OPTIONS'])
+@app.route('/regression', methods=['POST'])
 def regression():
-    if request.method == 'OPTIONS':
-        response = jsonify({'message': 'Preflight request received'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-        response.headers.add('Access-Control-Allow-Methods', 'POST')
-        return response
-
     data = request.json
     try:
         r2_score, y_pred, plot_base64, n_iterations, execution_time = run_regression(
