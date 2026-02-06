@@ -41,7 +41,7 @@ os.makedirs(PLOT_DIR, exist_ok=True)
 app = Flask(__name__)
 CORS(app, resources={
     r"/*": {
-        "origins": ["https://algoviz-ichv.onrender.com", "http://localhost:*"],
+        "origins": ["https://algoviz-ichv.onrender.com", "http://localhost:5173"],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
         "expose_headers": ["Content-Type"],
@@ -49,6 +49,9 @@ CORS(app, resources={
         "max_age": 3600
     }
 })
+# Add these configurations
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -342,6 +345,13 @@ def upload_file():
         if file.filename == "":
             return jsonify({"error": "No selected file"}), 400
 
+        # Check file size
+        file.seek(0, os.SEEK_END)
+        file_length = file.tell()
+        if file_length > 16 * 1024 * 1024:  # 16MB
+            return jsonify({"error": "File too large (max 16MB)"}), 413
+        file.seek(0)
+
         if not re.match(r'^[\w\-\.]+$', file.filename):
             return jsonify({"error": "Invalid filename"}), 400
 
@@ -359,8 +369,7 @@ def upload_file():
 
     except Exception as e:
         logger.error(f"Upload/analysis failed: {str(e)}", exc_info=True)
-        return jsonify({"error": f"Server error during analysis: {str(e)}"}), 500
-    
+        return jsonify({"error": f"Server error during analysis: {str(e)}"}), 500   
     
 def analyze_file(file_path):
     # Load the file into a pandas DataFrame
@@ -417,6 +426,10 @@ def generate_heatmap(df):
     return visualization_paths
 
 def find_best_algorithm(df):
+    # Limit dataset size for faster processing
+    if df.shape[0] > 1000:
+        df = df.sample(n=1000, random_state=42)
+    
     # Assuming the last column is the target variable
     X = df.iloc[:, :-1]
     y = df.iloc[:, -1]
@@ -432,17 +445,16 @@ def find_best_algorithm(df):
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    # Define models and parameters for GridSearchCV
+    # Simplified models with fewer parameters
     models = {
-        "RandomForest": RandomForestClassifier(),
-        "SVM": SVC(),
-        "LogisticRegression": LogisticRegression()
+        "RandomForest": RandomForestClassifier(n_estimators=50, random_state=42),
+        "LogisticRegression": LogisticRegression(max_iter=500)
     }
     
+    # Reduced parameter grids for faster search
     params = {
-        "RandomForest": {"n_estimators": [10, 50, 100]},
-        "SVM": {"C": [0.1, 1, 10], "kernel": ["linear", "rbf"]},
-        "LogisticRegression": {"C": [0.1, 1, 10]}
+        "RandomForest": {"max_depth": [5, 10]},  # Reduced options
+        "LogisticRegression": {"C": [0.1, 1]}  # Reduced options
     }
     
     best_algorithm = None
@@ -450,9 +462,9 @@ def find_best_algorithm(df):
     best_accuracy = 0
     best_features = None
     
-    # Perform GridSearchCV for each model
+    # Perform GridSearchCV with reduced CV folds
     for model_name, model in models.items():
-        grid_search = GridSearchCV(model, params[model_name], cv=5)
+        grid_search = GridSearchCV(model, params[model_name], cv=3, n_jobs=-1)  # cv=3 instead of 5
         grid_search.fit(X_train, y_train)
         score = grid_search.best_score_
         
@@ -470,7 +482,6 @@ def find_best_algorithm(df):
                 best_features = "Feature importance not available for this model."
     
     return best_algorithm, best_accuracy, best_features
-
 # Classification endpoint
 @app.route('/classification', methods=['POST'])
 def classification():

@@ -15,32 +15,45 @@ function UploadContent() {
     setFile(event.target.files[0])
   }
 
-  const handleUpload = async () => {
-    if (!file) {
-      alert("Please select a file first!")
-      return
-    }
-
-    setIsUploading(true)
-    const formData = new FormData()
-    formData.append("file", file)
-
-    try {
-      const response = await axios.post("https://algovizserver.onrender.com/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
-
-      console.log("Response:", response.data)
-      setAnalysisResults(response.data.analysis)
-      setError(null)
-    } catch (error) {
-      console.error("Error uploading file:", error)
-      setError("Error uploading file. Please try again.")
-      setAnalysisResults(null)
-    } finally {
-      setIsUploading(false)
-    }
+const handleUpload = async () => {
+  if (!file) {
+    alert("Please select a file first!")
+    return
   }
+
+  setIsUploading(true)
+  const formData = new FormData()
+  formData.append("file", file)
+
+  try {
+    const response = await axios.post(
+      "https://algovizserver.onrender.com/upload", 
+      formData, 
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 60000, // 60 seconds timeout
+        maxContentLength: 10000000, // 10MB
+        maxBodyLength: 10000000 // 10MB
+      }
+    )
+
+    console.log("Response:", response.data)
+    setAnalysisResults(response.data.analysis)
+    setError(null)
+  } catch (error) {
+    console.error("Error uploading file:", error)
+    if (error.code === 'ECONNABORTED') {
+      setError("Upload timed out. Please try a smaller file.")
+    } else if (error.response?.status === 413) {
+      setError("File too large. Please upload a smaller file.")
+    } else {
+      setError("Error uploading file. Please try again.")
+    }
+    setAnalysisResults(null)
+  } finally {
+    setIsUploading(false)
+  }
+}
 
   const handleSampleDataset = (dataset) => {
     console.log(`Selected ${dataset} dataset`)
