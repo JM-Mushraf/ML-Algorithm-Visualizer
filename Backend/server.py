@@ -170,7 +170,8 @@ def chatbot(user_input, method='word2vec'):
     return df.loc[best_match_idx, 'answer']
 
 # Chatbot endpoint
-@app.route('/chatbot', methods=['POST'])
+@app.route('/chatbot', methods=['POST'])    
+
 def chatbot_endpoint():
     data = request.json
     user_input = data.get('message', '')
