@@ -30,6 +30,11 @@ from chatbot_dataset import data
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 import logging
+import sys
+# Gunicorn timeout configuration (if running under gunicorn)
+if 'gunicorn' in sys.modules:
+    import gunicorn
+    gunicorn.SERVER_SOFTWARE = 'gunicorn'
 
 # Set up upload and plot directories
 UPLOAD_FOLDER = "uploads"
@@ -426,62 +431,65 @@ def generate_heatmap(df):
     return visualization_paths
 
 def find_best_algorithm(df):
-    # Limit dataset size for faster processing
-    if df.shape[0] > 1000:
-        df = df.sample(n=1000, random_state=42)
-    
-    # Assuming the last column is the target variable
-    X = df.iloc[:, :-1]
-    y = df.iloc[:, -1]
-    
-    # Encode categorical columns in X
-    X = pd.get_dummies(X)
-    
-    # Encode the target variable if it's categorical
-    if y.dtype == object:
-        le = LabelEncoder()
-        y = le.fit_transform(y)
-    
-    # Split the data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    # Simplified models with fewer parameters
-    models = {
-        "RandomForest": RandomForestClassifier(n_estimators=50, random_state=42),
-        "LogisticRegression": LogisticRegression(max_iter=500)
-    }
-    
-    # Reduced parameter grids for faster search
-    params = {
-        "RandomForest": {"max_depth": [5, 10]},  # Reduced options
-        "LogisticRegression": {"C": [0.1, 1]}  # Reduced options
-    }
-    
-    best_algorithm = None
-    best_score = 0
-    best_accuracy = 0
-    best_features = None
-    
-    # Perform GridSearchCV with reduced CV folds
-    for model_name, model in models.items():
-        grid_search = GridSearchCV(model, params[model_name], cv=3, n_jobs=-1)  # cv=3 instead of 5
-        grid_search.fit(X_train, y_train)
-        score = grid_search.best_score_
+    try:
+        # CRITICAL: Limit dataset size aggressively for Render
+        MAX_ROWS = 300
+        if df.shape[0] > MAX_ROWS:
+            df = df.sample(n=MAX_ROWS, random_state=42)
+            logger.info(f"Sampled dataset to {MAX_ROWS} rows")
         
-        if score > best_score:
-            best_score = score
-            best_algorithm = model_name
-            best_accuracy = accuracy_score(y_test, grid_search.predict(X_test))
-            
-            # Get feature importance or coefficients
-            if model_name == "RandomForest":
-                best_features = dict(zip(X.columns, grid_search.best_estimator_.feature_importances_))
-            elif model_name == "LogisticRegression":
-                best_features = dict(zip(X.columns, grid_search.best_estimator_.coef_[0]))
-            else:
-                best_features = "Feature importance not available for this model."
-    
-    return best_algorithm, best_accuracy, best_features
+        # Assuming the last column is the target variable
+        X = df.iloc[:, :-1]
+        y = df.iloc[:, -1]
+        
+        # Encode categorical columns in X
+        X = pd.get_dummies(X)
+        
+        # Limit features to prevent timeout
+        MAX_FEATURES = 30
+        if X.shape[1] > MAX_FEATURES:
+            # Keep only first 30 features
+            X = X.iloc[:, :MAX_FEATURES]
+            logger.info(f"Limited to {MAX_FEATURES} features")
+        
+        # Encode the target variable if it's categorical
+        if y.dtype == object:
+            le = LabelEncoder()
+            y = le.fit_transform(y)
+        
+        # Split the data into training and testing sets
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42
+        )
+        
+        # Use ONLY RandomForest - no GridSearchCV to avoid timeout
+        logger.info("Training RandomForest model...")
+        model = RandomForestClassifier(
+            n_estimators=20,  # Very small for speed
+            max_depth=5,
+            random_state=42,
+            n_jobs=1  # Don't use multiple cores to save memory
+        )
+        
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        
+        best_algorithm = "RandomForest"
+        best_accuracy = accuracy_score(y_test, y_pred)
+        
+        # Get feature importance
+        best_features = dict(zip(X.columns, model.feature_importances_))
+        # Only return top 10 features to keep response small
+        best_features = dict(sorted(best_features.items(), key=lambda x: x[1], reverse=True)[:10])
+        
+        logger.info(f"Analysis complete. Accuracy: {best_accuracy:.4f}")
+        
+        return best_algorithm, best_accuracy, best_features
+        
+    except Exception as e:
+        logger.error(f"Error in find_best_algorithm: {str(e)}")
+        # Return fallback values instead of crashing
+        return "RandomForest", 0.0, {"error": "Analysis failed"}
 # Classification endpoint
 @app.route('/classification', methods=['POST'])
 def classification():
